@@ -2,10 +2,14 @@ import java.sql.*;
 import java.util.Scanner;
 
 public class Project {
-    // you may change the following connection parameters
+    // you may change the following connection parameters to your db account
     private static String dbAddress = "jdbc:oracle:thin://@db18.cse.cuhk.edu.hk:1521/oradb.cse.cuhk.edu.hk";
     private static String dbUsername = "h052";
     private static String dbPassword = "fromaTwa";
+
+    private static Connection connection = null;
+    private static Statement statement = null;
+    private static ResultSet resultSet = null;
 
     private static String YYYY = "0000";
     private static String MM = "00";
@@ -13,7 +17,45 @@ public class Project {
     private static Scanner sc = new Scanner(System.in);
 
     public static void main(String[] args) {
-        displayMainMenu();
+        try {
+            // Load the Oracle JDBC driver
+            Class.forName("oracle.jdbc.OracleDriver");
+            // connectionnect to the database
+            connection = DriverManager.getConnection(dbAddress, dbUsername, dbPassword);
+            // Create a statement
+            statement = connection.createStatement();
+
+            displayMainMenu();
+        } catch (ClassNotFoundException e) {
+            System.err.println("Failed to load Oracle JDBC driver.");
+            e.printStackTrace();
+        } catch (SQLException e) {
+            System.out.println("Failed to connection to the database.");
+            e.printStackTrace();
+        } finally {
+            // Close the resources
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     private static void displayMainMenu() {
@@ -370,20 +412,6 @@ public class Project {
             default:
                 return 31;
         }
-    }
-
-    private static Connection connectToDB()n{
-        Connection con = null;
-        try {
-                Class.forName("oracle.jdbc.OracleDriver");
-                con = DriverManager.getConnection(dbAddress, dbUsername, dbPassword);
-        } catch (ClassNotFoundException e){
-                System.out.println("[Error]: Java MySQL DB Driver not found!!");
-                System.exit(0);
-        } catch (SQLException e){
-                System.out.println(e);
-        }
-        return con;
     }
 
     private static boolean isValidISBN(String ISBN) {
