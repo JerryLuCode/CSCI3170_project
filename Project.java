@@ -17,6 +17,7 @@ public class Project {
     private static Scanner sc = new Scanner(System.in);
 
     public static void main(String[] args) {
+
         try {
             // Load the Oracle JDBC driver
             Class.forName("oracle.jdbc.OracleDriver");
@@ -58,6 +59,7 @@ public class Project {
         }
     }
 
+// Main Menu
     private static void displayMainMenu() {
         System.out.println("The system time is now: " + YYYY + "-" + MM + "-" + DD);
         System.out.println("<This is the Book Ordering System.>");
@@ -100,6 +102,7 @@ public class Project {
 
     }
 
+// System Interface
     private static void displaySystemInterface() {
         System.out.println("<This is the System interface.>");
         System.out.println("-------------------------------");
@@ -135,7 +138,8 @@ public class Project {
                 break;
         }
     }
-
+    
+// Customer Interface
     private static void displayCustomerInterface() {
         System.out.println("<This is the Customer interface.>");
         System.out.println("---------------------------------");
@@ -302,6 +306,7 @@ public class Project {
         // Order: Results should be sorted in ascending order by “Order ID”
     }
 
+// Bookstore Interface
     private static void displayBookstoreInterface() {
         System.out.println("<This is the Bookstore interface.>");
         System.out.println("----------------------------------");
@@ -370,6 +375,9 @@ public class Project {
         // TODO: display N most popular books
     }
 
+// Utility functions
+    
+    // https://www.javatpoint.com/java-string-to-date
     private static void setSystemDate() {
         System.out.print("Please input the date (YYYYMMDD): ");
         String date = sc.nextLine();
