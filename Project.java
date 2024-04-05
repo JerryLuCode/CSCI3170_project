@@ -341,7 +341,6 @@ public class Project {
         MM = date.substring(4, 6);
         DD = date.substring(6, 8);
 
-        // TODO: update the date when doing 'Order'
         try {
             resultSet = statement.executeQuery("SELECT MAX(o_date) FROM Orders");
             if (resultSet.next()) {
@@ -354,8 +353,6 @@ public class Project {
             System.out.println("Failed to get the latest date in orders.");
             e.printStackTrace();
         }
-        // System.out.println("Latest date in orders: todo");
-        
     }
     
     
@@ -414,6 +411,45 @@ public class Project {
                 String ISBN = sc.nextLine();
                 System.out.println();
                 // search by ISBN
+                try {
+                    String sql = "SELECT * FROM Book WHERE ISBN = ?";
+                    PreparedStatement pstmt = connection.prepareStatement(sql);
+                    pstmt.setString(1, ISBN);
+                    resultSet = pstmt.executeQuery();
+                    int count = 1;
+                    if (resultSet.next()) {
+                        System.out.println("Record " + count++);
+                        System.out.println("ISBN: " + resultSet.getString("ISBN"));
+                        System.out.println("Book Title: " + resultSet.getString("title"));
+                        System.out.println("Unit Price: " + resultSet.getInt("unit_price"));
+                        System.out.println("No of Available: " + resultSet.getInt("no_of_copies"));
+                        // search author name given ISBN
+                        try {
+                            String sql2 = "SELECT author_name FROM Book_author WHERE ISBN = ? ORDER BY author_name ASC";
+                            PreparedStatement pstmt2 = connection.prepareStatement(sql2);
+                            pstmt2.setString(1, ISBN);
+                            ResultSet resultSet2 = pstmt2.executeQuery();
+                            System.out.println("Author Name: ");
+                            int authorCount = 1;
+                            while (resultSet2.next()) {
+                                System.out.println(authorCount++ + ": " + resultSet2.getString("author_name"));
+                            }
+                            // not sure what this line is doing
+                            // System.out.println("Operation not allowed after ResultSet closed");
+                            System.out.println();
+                        } catch (SQLException e) {
+                            System.out.println("Failed to search the author name.");
+                            e.printStackTrace();
+                        }
+                    } else {
+                        System.out.println("cannot query the book");
+                    }
+                    System.out.println();
+                    displayCustomerInterface();
+                } catch (SQLException e) {
+                    System.out.println("Failed to search the book by ISBN.");
+                    e.printStackTrace();
+                }
                 break;
             case "2":
                 System.out.print("Input the Book Title: ");
