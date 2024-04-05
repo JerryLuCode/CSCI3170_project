@@ -1,3 +1,5 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.sql.*;
 import java.util.Scanner;
 
@@ -67,7 +69,7 @@ public class Project {
         System.out.println("1. System interface.");
         System.out.println("2. Customer interface.");
         System.out.println("3. Bookstore interface.");
-        System.out.println("4. Set System Date.");
+        System.out.println("4. Show System Date.");
         System.out.println("5. Quit the system......\n");
         
         System.out.print("Please enter your choice??..");
@@ -88,8 +90,8 @@ public class Project {
                 displayBookstoreInterface();
                 break;
             case "4":
-                // Set System Date
-                setSystemDate();
+                // Show System Date
+                showSystemDate();
                 break;
             case "5":
                 // Quit the system
@@ -100,6 +102,12 @@ public class Project {
                 break;
         }
 
+    }
+
+    private static void showSystemDate() {
+        System.out.println("The system time is now: " + YYYY + "-" + MM + "-" + DD);
+        System.out.println();
+        displayMainMenu();
     }
 
 // System Interface
@@ -119,15 +127,19 @@ public class Project {
         switch (choice) {
             case "1":
                 // Create Table
+                createTable();
                 break;
             case "2":
                 // Delete Table
+                deleteTable();
                 break;
             case "3":
                 // Insert Data
+                insertData();
                 break;
             case "4":
                 // Set System Date
+                setSystemDate();
                 break;
             case "5":
                 // Back to main menu
@@ -138,6 +150,214 @@ public class Project {
                 break;
         }
     }
+
+    private static void createTable() {
+        try {
+            // Create the table
+            String createBook = 
+            """
+                CREATE TABLE Book (
+                    ISBN CHAR(13) PRIMARY KEY,
+                    title VARCHAR(100) NOT NULL,
+                    unit_price INT CHECK (unit_price >= 0),
+                    no_of_copies INT CHECK (no_of_copies >= 0)
+                )
+            """;
+            statement.executeUpdate(createBook);
+
+            String createCustomer = 
+            """
+                CREATE TABLE Customer (
+                    customer_id VARCHAR(10) PRIMARY KEY,
+                    name VARCHAR(50) NOT NULL,
+                    shipping_address VARCHAR(200) NOT NULL,
+                    credit_card_no CHAR(19)
+                )
+            """;
+            statement.executeUpdate(createCustomer);
+
+            String createOrder = 
+            """
+                CREATE TABLE Orders (
+                    order_id CHAR(8) PRIMARY KEY,
+                    o_date DATE NOT NULL,
+                    shipping_status CHAR(1) CHECK (shipping_status IN ('Y', 'N')),
+                    charge INT CHECK (charge >= 0),
+                    customer_id VARCHAR(10) NOT NULL,
+                    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
+                )
+            """;
+            statement.executeUpdate(createOrder);
+
+            String createOrdering = 
+            """
+                CREATE TABLE Ordering (
+                    order_id CHAR(8),
+                    ISBN CHAR(13),
+                    quantity INT CHECK (quantity >= 0),
+                    FOREIGN KEY (order_id) REFERENCES Orders(order_id),
+                    FOREIGN KEY (ISBN) REFERENCES Book(ISBN),
+                    PRIMARY KEY (order_id, ISBN)
+                )
+            """;
+            statement.executeUpdate(createOrdering);
+            String createBookAuthor = 
+            """
+                CREATE TABLE Book_author (
+                    ISBN CHAR(13),
+                    author_name VARCHAR(50) NOT NULL,
+                    FOREIGN KEY (ISBN) REFERENCES Book(ISBN),
+                    PRIMARY KEY (ISBN, author_name)
+                )
+            """;
+            statement.executeUpdate(createBookAuthor);
+            System.out.println("Table created successfully.\n");
+            displaySystemInterface();
+        } catch (SQLException e) {
+            System.out.println("Failed to create the table.");
+            e.printStackTrace();
+        }
+    }
+
+    private static void deleteTable() {
+        try {
+            // Drop the table
+            String dropBookAuthor = "DROP TABLE Book_author";
+            statement.executeUpdate(dropBookAuthor);
+
+            String dropOrdering = "DROP TABLE Ordering";
+            statement.executeUpdate(dropOrdering);
+
+            String dropOrder = "DROP TABLE Orders";
+            statement.executeUpdate(dropOrder);
+
+            String dropBook = "DROP TABLE Book";
+            statement.executeUpdate(dropBook);
+
+            String dropCustomer = "DROP TABLE Customer";
+            statement.executeUpdate(dropCustomer);
+
+            System.out.println("Table deleted successfully.\n");
+            displaySystemInterface();
+        } catch (SQLException e) {
+            System.out.println("Failed to delete the table.");
+            e.printStackTrace();
+        }
+    }
+
+    private static void insertData() {
+        System.out.println("Please enter the folder path");
+        String path = sc.nextLine();
+        try {
+            System.out.print("Processing...");
+
+            // Load the data
+            try (BufferedReader br = new BufferedReader(new FileReader(path + "/book.txt"))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    String sql = "INSERT INTO Book (ISBN, title, unit_price, no_of_copies) VALUES (?, ?, ?, ?)";
+                    PreparedStatement pstmt = connection.prepareStatement(sql);
+                    String[] data = line.split("\\|");
+                    pstmt.setString(1, data[0]);
+                    pstmt.setString(2, data[1]);
+                    pstmt.setInt(3, Integer.parseInt(data[2]));
+                    pstmt.setInt(4, Integer.parseInt(data[3]));
+                    pstmt.executeUpdate();
+                }
+            }
+
+            try (BufferedReader br = new BufferedReader(new FileReader(path + "/customer.txt"))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    String sql = "INSERT INTO Customer (customer_id, name, shipping_address, credit_card_no) VALUES (?, ?, ?, ?)";
+                    PreparedStatement pstmt = connection.prepareStatement(sql);
+                    String[] data = line.split("\\|");
+                    pstmt.setString(1, data[0]);
+                    pstmt.setString(2, data[1]);
+                    pstmt.setString(3, data[2]);
+                    pstmt.setString(4, data[3]);
+                    pstmt.executeUpdate();
+                }
+            }
+
+            try (BufferedReader br = new BufferedReader(new FileReader(path + "/orders.txt"))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    String sql = "INSERT INTO Orders (order_id, o_date, shipping_status, charge, customer_id) VALUES (?, ?, ?, ?, ?)";
+                    PreparedStatement pstmt = connection.prepareStatement(sql);
+                    String[] data = line.split("\\|");
+                    pstmt.setString(1, data[0]);
+                    pstmt.setDate(2, Date.valueOf(data[1]));
+                    pstmt.setString(3, data[2]);
+                    pstmt.setInt(4, Integer.parseInt(data[3]));
+                    pstmt.setString(5, data[4]);
+                    pstmt.executeUpdate();
+                }
+            }
+
+            try (BufferedReader br = new BufferedReader(new FileReader(path + "/ordering.txt"))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    String sql = "INSERT INTO Ordering (order_id, ISBN, quantity) VALUES (?, ?, ?)";
+                    PreparedStatement pstmt = connection.prepareStatement(sql);
+                    String[] data = line.split("\\|");
+                    pstmt.setString(1, data[0]);
+                    pstmt.setString(2, data[1]);
+                    pstmt.setInt(3, Integer.parseInt(data[2]));
+                    pstmt.executeUpdate();
+                }
+            }
+
+            try (BufferedReader br = new BufferedReader(new FileReader(path + "/book_author.txt"))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    String sql = "INSERT INTO Book_author (ISBN, author_name) VALUES (?, ?)";
+                    PreparedStatement pstmt = connection.prepareStatement(sql);
+                    String[] data = line.split("\\|");
+                    pstmt.setString(1, data[0]);
+                    pstmt.setString(2, data[1]);
+                    pstmt.executeUpdate();
+                }
+            }
+
+            System.out.println("Data is loaded!");
+            displaySystemInterface();
+        } catch (Exception e) {
+            System.out.println("Failed to insert data.");
+            e.printStackTrace();
+        }
+    }
+
+    // https://www.javatpoint.com/java-string-to-date
+    private static void setSystemDate() {
+        System.out.print("Please input the date (YYYYMMDD): ");
+        String date = sc.nextLine();
+        while (date.length() != 8 || !date.matches("\\d+") || !isLaterDate(date)) {
+            System.out.println("Invalid input. Please enter a date later than " + YYYY + "-" + MM + "-" + DD + ".");
+            System.out.print("Please input the date (YYYYMMDD): ");
+            date = sc.nextLine();
+        }
+        YYYY = date.substring(0, 4);
+        MM = date.substring(4, 6);
+        DD = date.substring(6, 8);
+
+        // TODO: update the date when doing 'Order'
+        try {
+            resultSet = statement.executeQuery("SELECT MAX(o_date) FROM Orders");
+            if (resultSet.next()) {
+                String latestDate = resultSet.getString(1);
+                System.out.println("Latest date in orders: " + latestDate.substring(0, 10));
+                System.out.println("Today is " + YYYY + "-" + MM + "-" + DD);
+                displaySystemInterface();
+            }
+        } catch (SQLException e) {
+            System.out.println("Failed to get the latest date in orders.");
+            e.printStackTrace();
+        }
+        // System.out.println("Latest date in orders: todo");
+        
+    }
+    
     
 // Customer Interface
     private static void displayCustomerInterface() {
@@ -374,23 +594,9 @@ public class Project {
         }
         // TODO: display N most popular books
     }
+    
 
 // Utility functions
-    
-    // https://www.javatpoint.com/java-string-to-date
-    private static void setSystemDate() {
-        System.out.print("Please input the date (YYYYMMDD): ");
-        String date = sc.nextLine();
-        while (date.length() != 8 || !date.matches("\\d+") || !isLaterDate(date)) {
-            System.out.println("Invalid input. Please enter a date later than " + YYYY + MM + DD);
-            System.out.print("Please input the date (YYYYMMDD): ");
-            date = sc.nextLine();
-        }
-        YYYY = date.substring(0, 4);
-        MM = date.substring(4, 6);
-        DD = date.substring(6, 8);
-    }
-    
     private static boolean isLaterDate(String date) {
         int year = Integer.parseInt(date.substring(0, 4));
         int month = Integer.parseInt(date.substring(4, 6));
@@ -404,8 +610,8 @@ public class Project {
             return false;
         }
         return year > Integer.parseInt(YYYY) || 
-               (year == Integer.parseInt(YYYY) && month > Integer.parseInt(MM)) || 
-               (year == Integer.parseInt(YYYY) && month == Integer.parseInt(MM) && day > Integer.parseInt(DD));
+            (year == Integer.parseInt(YYYY) && month > Integer.parseInt(MM)) || 
+            (year == Integer.parseInt(YYYY) && month == Integer.parseInt(MM) && day > Integer.parseInt(DD));
     }
 
     private static int getDaysInMonth(int year, int month) {
@@ -453,3 +659,5 @@ public class Project {
         return yyyymm.matches(pattern);
     }
 }
+
+
