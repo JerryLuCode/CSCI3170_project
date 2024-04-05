@@ -95,7 +95,7 @@ public class Project {
                 break;
             case "5":
                 // Quit the system
-                System.exit(0);
+                break;
             default:
                 System.out.println("Invalid choice. Please enter a valid option.");
                 displayMainMenu();
