@@ -54,6 +54,7 @@ public class Project {
             if (connection != null) {
                 try {
                     connection.close();
+                    
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -405,6 +406,24 @@ public class Project {
         System.out.println("4 Exit");
         System.out.print("Your choice??..");
         String choice = sc.nextLine();
+        // int choice;
+        // try {
+        //   choice = readOption(sc.nextLine());
+        //   if (choice == 4) {
+        //     displayCustomerInterface();
+        //     return;
+        //   }
+        // } catch (IllegalArgumentException e) {
+        //   System.out.println(e.getMessage());
+        //   bookSearch();
+        //   return;
+        // }
+
+        // var ps = switch (choice) {
+        //   case 1: case 2: case 3:
+
+        //     break;
+        // }
         switch (choice) {
             case "1":
                 System.out.print("Input the ISBN: ");
@@ -558,8 +577,8 @@ public class Project {
         System.out.println();
 
         // TODO: display order details
-        // “Order ID”, “Order Date”, “Books Ordered”, “Charge” and “Shipping Status”
-        // Order: Results should be sorted in ascending order by “Order ID”
+        // "Order ID", "Order Date", "Books Ordered", "Charge" and "Shipping Status"
+        // Order: Results should be sorted in ascending order by "Order ID"
     }
 
 // Bookstore Interface
@@ -665,7 +684,7 @@ public class Project {
     }
 
     private static boolean isValidISBN(String ISBN) {
-        // ISBN: 13 chars with format “X-XXXX-XXXX-X”, where X is a digit
+        // ISBN: 13 chars with format "X-XXXX-XXXX-X", where X is a digit
         String pattern = "^\\d-[\\d]{4}-[\\d]{4}-\\d$";
         return ISBN.matches(pattern);
     }
