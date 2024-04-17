@@ -6,10 +6,14 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class Queries {
-  static PreparedStatement selectBookByISBN = null,
+  static PreparedStatement 
+  
+      // 5.2.1 Book Search
+      selectBookByISBN = null,
       selectBookByTitle = null,
       selectBookByAuthor = null,
 
+      // 5.2.2 Order Creation
       selectCustomerByID = null,
       checkCopiesAvailable = null,
       getMaxOrderID = null,
@@ -17,11 +21,13 @@ public class Queries {
       insertOrdering = null,
       updateCharge = null,
 
+      // 5.2.3 Order Altering
       selectOrders = null,
       selectOrdering = null,
       updateOrders = null,
       updateOrdering = null,
 
+      // 5.2.4 Order Query
       selectOrdersByCustomerID = null;
 
   public static void main(String[] args) {
@@ -230,8 +236,8 @@ public class Queries {
         """);
     updateOrdering = conn.prepareStatement("""
         UPDATE ordering
-          SET no_of_copies = ?
-          WHERE order_id = ?
+          SET quantity = ?
+          WHERE order_id = ? and isbn = ?
         """);
 
     /*
@@ -254,6 +260,7 @@ public class Queries {
           ORDER BY order_id
         """);
 
-    System.out.println("Queries Initialized.");
+
+
   }
 }

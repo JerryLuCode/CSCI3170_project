@@ -3,9 +3,11 @@ package csci3170project;
 import static csci3170project.Queries.*;
 import static csci3170project.Utils.*;
 
+import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Scanner;
 
@@ -19,9 +21,10 @@ public class Project {
   private static Statement statement = null;
   private static ResultSet resultSet = null;
 
+  private static LocalDate date = LocalDate.of(0, 1, 1);
   private static String YYYY = "0000";
-  private static String MM = "00";
-  private static String DD = "00";
+  private static String MM = "01";
+  private static String DD = "01";
   private static Scanner sc = new Scanner(System.in);
 
   public static void main(String[] args) {
@@ -368,7 +371,7 @@ public class Project {
     System.out.println("4. Order Query.");
     System.out.println("5. Back to main menu.\n");
 
-    System.out.print("Please enter your choice??..");
+    System.out.print("What is your choice??..");
     String choice = sc.nextLine();
     System.out.println();
 
@@ -669,7 +672,7 @@ public class Project {
 
     try {
       insertOrders.setString(1, nextOrderID);
-      insertOrders.setDate(2, new java.sql.Date(readDate(YYYY + "-" + MM + "-" + DD).getTime()));
+      insertOrders.setDate(2, Date.valueOf(readDate(YYYY + "-" + MM + "-" + DD)));
       insertOrders.setString(3, customerID);
       insertOrders.executeUpdate();
 
@@ -690,62 +693,212 @@ public class Project {
       orderCreation();
       return;
     }
-    System.out.println(map);
   }
 
+  // 5.2.3 Order Altering
   private static void orderAltering() {
-    System.out.println("Please enter the orderId you want to change: ");
-    String orderId = sc.nextLine();
-    while (!isValidOrderID(orderId)) {
-      System.out.println("Invalid orderID. Please enter a valid orderID.");
-      System.out.println("Please enter the orderId you want to change: ");
-      orderId = sc.nextLine();
-    }
-    // TODO: display order details
+    String orderID = null;
+    do {
+      try{
+        System.out.print("Please enter the orderId you want to change: ");
+        var tmpOrderId = readOrderID(sc.nextLine());
+        selectOrders.setString(1, tmpOrderId);
+        var rs = selectOrders.executeQuery();
+        if (rs.next()){
+          System.out.printf("order_id:%s  shipping:%s  charge=%d  customer_id=%s\n", 
+          orderID = tmpOrderId, rs.getString(1), 
+          rs.getInt(2), rs.getString(3));
+          break;
+        }
+        System.out.println("Invalid orderID. Please enter a valid orderID.");
+      } catch (IllegalArgumentException e) {
+        System.out.println(e.getMessage());
+      } catch (SQLException e) {
+        System.out.println("Failed to selectOrders.");
+        e.printStackTrace();
+        return;
+      }
+    } while(orderID == null);
+    
+    var books = new ArrayList<Pair<String, Integer>>();
+    try {
+      var i = 1;
+      selectOrdering.setString(1, orderID);
+      var rs = selectOrdering.executeQuery();
+      while (rs.next()) {
+        books.add(new Pair<>(rs.getString(1), rs.getInt(2)));
+        System.out.printf("book no: %d ISBN = %s quantity = %d\n", 
+        i++, rs.getString(1), rs.getInt(2));
+      }
 
-    System.out.print("Which book do you want to alter (input book no.): ");
-    String bookNo = sc.nextLine();
-    while (!bookNo.matches("\\d+")) {
-      System.out.println("Invalid input. Please enter a valid integer.");
+      if (i == 1) {
+        System.out.println("No book found.");
+        displayCustomerInterface();
+        return;
+      }
+    } catch (SQLException e) {
+      System.out.println("Failed to selectOrdering.");
+      e.printStackTrace();
+    }
+
+    int bookNo = -1;
+    do {
       System.out.print("Which book do you want to alter (input book no.): ");
-      bookNo = sc.nextLine();
-    }
-    System.out.println("input add or remove");
-    String choice = sc.nextLine();
-    if (choice.equals("add")) {
-      System.out.print("input the number: ");
-      String number = sc.nextLine();
-      while (!number.matches("\\d+")) {
-        System.out.println("Invalid input. Please enter a valid integer.");
-        System.out.print("input the number: ");
-        number = sc.nextLine();
+      try {
+        bookNo = readPosNum(sc.nextLine(), books.size()) - 1;
+      } catch (IllegalArgumentException e) {
+        System.out.println(e.getMessage());
       }
+    } while (bookNo == -1);
 
-      // TODO: do the update
-
-    } else if (choice.equals("remove")) {
-      System.out.print("input the number: ");
-      String number = sc.nextLine();
-      while (!number.matches("\\d+")) {
-        System.out.println("Invalid input. Please enter a valid integer.");
-        System.out.print("input the number: ");
-        number = sc.nextLine();
+    boolean isAdd = false;
+    while (true) {
+      try {
+        System.out.println("input add or remove");
+        isAdd = readAddOrRemove(sc.nextLine());
+        break;
+      } catch (IllegalArgumentException e) {
+        System.out.println(e.getMessage());
       }
-      // TODO: do the update
     }
 
+    // get upper limit of copies available if it is add, we can't buy more than available 
+    int maxQuant = books.get(bookNo).b;
+    if (isAdd)
+    try {
+      checkCopiesAvailable.setString(1, books.get(bookNo).a);
+      var rs = checkCopiesAvailable.executeQuery();
+      if (!rs.next()) {
+        System.out.println("Cannot find book.");
+        displayCustomerInterface();
+        return;
+      }
+
+      if ((maxQuant = rs.getInt(1)) < 1) {
+        System.out.println("No copies available.");
+        displayCustomerInterface();
+        return;
+      }
+    } catch (SQLException sql) {
+      System.out.println("Failed to check the copies available.");
+      sql.printStackTrace();
+      return;
+    }
+    
+    int quant = -1;
+    do {
+      try {
+        System.out.print("Input the number: ");
+        quant = readPosNum(sc.nextLine(), maxQuant);
+        break;
+      } catch (IllegalArgumentException e) {
+        System.out.println(e.getMessage());
+        System.out.println("The maximum copies available is " + maxQuant + ".");
+      }
+    } while(quant == -1);
+
+    try {
+      updateOrdering.setInt(1, books.get(bookNo).b + quant * (isAdd ? 1 : -1));
+      updateOrdering.setString(2, orderID);
+      updateOrdering.setString(3, books.get(bookNo).a);
+      updateOrdering.executeUpdate();
+
+      updateOrders.setDate(1, Date.valueOf(date));
+      updateOrders.setString(2, orderID);
+      updateOrders.executeUpdate();
+
+      updateCharge.setString(1, orderID);
+      updateCharge.setString(2, orderID);
+      updateCharge.executeUpdate();
+
+      System.err.println("Update is ok!\nupdate done!!\nupdated charge");
+
+      // Select and display order & ordering info at last
+      var rs = selectOrders.executeQuery();
+      
+      // Impossible to be false
+      if (rs.next()){
+        System.out.printf("order_id:%s  shipping:%s  charge=%d  customer_id=%s\n", 
+        orderID, rs.getString(1),  rs.getInt(2), rs.getString(3));
+      }
+      
+      var i = 1;
+      rs = selectOrdering.executeQuery();
+      while (rs.next()) {
+        books.add(new Pair<>(rs.getString(1), rs.getInt(2)));
+        System.out.printf("book no: %d ISBN = %s quantity = %d\n", 
+        i++, rs.getString(1), rs.getInt(2));
+      }
+
+      // Impossible to be true
+      if (i == 1) {
+        System.out.println("No book found.");
+        displayCustomerInterface();
+        return;
+      }
+
+    } catch (SQLException sql) {
+      System.out.println("Failed to updateOrdering.");
+      sql.printStackTrace();
+    } catch (Exception e) {
+      System.out.println("Unknown Error.");
+      e.printStackTrace();
+    }
   }
 
+  // 5.2.4 Order Query
   private static void customerOrderQuery() {
-    System.out.print("Please input customer ID: ");
-    String customerID = sc.nextLine();
-    System.out.print("Please input the year: ");
-    String year = sc.nextLine();
-    System.out.println();
+    // Input: Customer ID
+    String customerID = null;
+    do {
+      try {
+        System.out.print("Please Input Customer ID: ");
+        customerID = readCustomerID(sc.nextLine());
+      } catch (IllegalArgumentException e) {
+        System.out.println(e.getMessage());
+      }
+    } while (customerID == null);
 
-    // TODO: display order details
-    // "Order ID", "Order Date", "Books Ordered", "Charge" and "Shipping Status"
-    // Order: Results should be sorted in ascending order by "Order ID"
+    // Input: Year
+    int year = -1;
+    do {
+      try {
+        System.out.print("Please Input the Year: ");
+        year = readPosNum(sc.nextLine(), 9999);
+      } catch (IllegalArgumentException e) {
+        System.out.println(e.getMessage());
+      }
+    } while (year == -1);
+
+    // Get orders by c_id and year
+    try {
+      selectOrdersByCustomerID.setString(1, customerID);
+      selectOrdersByCustomerID.setInt(2, year);
+      var i = 1;
+      var rs = selectOrdersByCustomerID.executeQuery();
+      while (rs.next()) {
+        System.out.printf("""
+
+            Record : %d
+            OrderID : %s
+            OrderDate : %s
+            charge : %d
+            shipping status : %s
+            """, i++, rs.getString(1), rs.getDate(2),
+            rs.getInt(3), rs.getString(4));
+      }
+
+      // if i is 1, no order found
+      if (i == 1)
+        System.out.println("No order found.");
+
+      displayCustomerInterface();
+    } catch (SQLException e) {
+      System.out.println("Failed to selectOrdersByCustomerID.");
+      e.printStackTrace();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   // Bookstore Interface
