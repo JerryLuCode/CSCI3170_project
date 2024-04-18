@@ -18,10 +18,11 @@ javac -d ./out/ -classpath ".;ojdbc7.jar" "./csci3170project/*.java"
 java -classpath ".;ojdbc7.jar" csci3170project.Project
 ```
 
-Linux/Mac:
+Mac:
 ```
-javac -d ./out/ -classpath ".:ojdbc7.jar" "./csci3170project/*.java"
-java -classpath ".:ojdbc7.jar" csci3170project.Project
+rm csci3170project/*.class
+javac csci3170project/*
+java -cp ./ojdbc7.jar:./ csci3170project/Project
 ```
 
 

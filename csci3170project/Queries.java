@@ -100,10 +100,15 @@ public class Queries {
           ORDER BY title, book.isbn, author_name
         """);
     selectBookByAuthor = conn.prepareStatement("""
-        SELECT title, book.isbn, unit_price, no_of_copies, author_name
-          FROM book, book_author
-          WHERE author_name = ? and book.isbn = book_author.isbn
-          ORDER BY title, book.isbn, author_name
+      SELECT title, book.isbn, unit_price, no_of_copies, author_name
+        FROM book, book_author
+        WHERE book.isbn IN (
+            SELECT isbn
+            FROM book_author
+            WHERE author_name = ?
+          ) 
+        and book.isbn = book_author.isbn
+        ORDER BY title, book.isbn, author_name
         """);
 
     /*

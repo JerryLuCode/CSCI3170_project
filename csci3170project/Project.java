@@ -464,10 +464,12 @@ public class Project {
     try (var rs = ps.executeQuery()) {
       String curr_book = null;
       int i = 1;
+      int j = 1;
       while (rs.next()) {
         if (!rs.getString("isbn").equals(curr_book)) {
           curr_book = rs.getString("isbn");
           System.out.printf("""
+
               Record %d
               ISBN: %s
               Book Title:%s
@@ -477,9 +479,11 @@ public class Project {
               1 :%s
               """, i++, curr_book, rs.getString("title"), rs.getInt("unit_price"),
               rs.getInt("no_of_copies"), rs.getString("author_name"));
+            j = 1;
         } else
-          System.out.printf("%d :%s\n", i++, rs.getString("author_name"));
+          System.out.printf("%d :%s\n", ++j, rs.getString("author_name"));
       }
+      System.out.println();
     } catch (SQLException e) {
       System.out.println("Failed to search the book.");
       e.printStackTrace();
@@ -687,6 +691,7 @@ public class Project {
       updateCharge.setString(1, nextOrderID);
       updateCharge.setString(2, nextOrderID);
       updateCharge.executeUpdate();
+      displayCustomerInterface();
     } catch (SQLException sql) {
       System.out.println("Failed to insertOrders. " + nextOrderID);
       sql.printStackTrace();
@@ -699,15 +704,15 @@ public class Project {
   private static void orderAltering() {
     String orderID = null;
     do {
-      try{
+      try {
         System.out.print("Please enter the orderId you want to change: ");
         var tmpOrderId = readOrderID(sc.nextLine());
         selectOrders.setString(1, tmpOrderId);
         var rs = selectOrders.executeQuery();
-        if (rs.next()){
-          System.out.printf("order_id:%s  shipping:%s  charge=%d  customer_id=%s\n", 
-          orderID = tmpOrderId, rs.getString(1), 
-          rs.getInt(2), rs.getString(3));
+        if (rs.next()) {
+          System.out.printf("order_id:%s  shipping:%s  charge=%d  customer_id=%s\n",
+              orderID = tmpOrderId, rs.getString(1),
+              rs.getInt(2), rs.getString(3));
           break;
         }
         System.out.println("Invalid orderID. Please enter a valid orderID.");
@@ -718,8 +723,8 @@ public class Project {
         e.printStackTrace();
         return;
       }
-    } while(orderID == null);
-    
+    } while (orderID == null);
+
     var books = new ArrayList<Pair<String, Integer>>();
     try {
       var i = 1;
@@ -727,8 +732,8 @@ public class Project {
       var rs = selectOrdering.executeQuery();
       while (rs.next()) {
         books.add(new Pair<>(rs.getString(1), rs.getInt(2)));
-        System.out.printf("book no: %d ISBN = %s quantity = %d\n", 
-        i++, rs.getString(1), rs.getInt(2));
+        System.out.printf("book no: %d ISBN = %s quantity = %d\n",
+            i++, rs.getString(1), rs.getInt(2));
       }
 
       if (i == 1) {
@@ -762,29 +767,30 @@ public class Project {
       }
     }
 
-    // get upper limit of copies available if it is add, we can't buy more than available 
+    // get upper limit of copies available if it is add, we can't buy more than
+    // available
     int maxQuant = books.get(bookNo).b;
     if (isAdd)
-    try {
-      checkCopiesAvailable.setString(1, books.get(bookNo).a);
-      var rs = checkCopiesAvailable.executeQuery();
-      if (!rs.next()) {
-        System.out.println("Cannot find book.");
-        displayCustomerInterface();
+      try {
+        checkCopiesAvailable.setString(1, books.get(bookNo).a);
+        var rs = checkCopiesAvailable.executeQuery();
+        if (!rs.next()) {
+          System.out.println("Cannot find book.");
+          displayCustomerInterface();
+          return;
+        }
+
+        if ((maxQuant = rs.getInt(1)) < 1) {
+          System.out.println("No copies available.");
+          displayCustomerInterface();
+          return;
+        }
+      } catch (SQLException sql) {
+        System.out.println("Failed to check the copies available.");
+        sql.printStackTrace();
         return;
       }
 
-      if ((maxQuant = rs.getInt(1)) < 1) {
-        System.out.println("No copies available.");
-        displayCustomerInterface();
-        return;
-      }
-    } catch (SQLException sql) {
-      System.out.println("Failed to check the copies available.");
-      sql.printStackTrace();
-      return;
-    }
-    
     int quant = -1;
     do {
       try {
@@ -795,7 +801,7 @@ public class Project {
         System.out.println(e.getMessage());
         System.out.println("The maximum copies available is " + maxQuant + ".");
       }
-    } while(quant == -1);
+    } while (quant == -1);
 
     try {
       updateOrdering.setInt(1, books.get(bookNo).b + quant * (isAdd ? 1 : -1));
@@ -815,19 +821,19 @@ public class Project {
 
       // Select and display order & ordering info at last
       var rs = selectOrders.executeQuery();
-      
+
       // Impossible to be false
-      if (rs.next()){
-        System.out.printf("order_id:%s  shipping:%s  charge=%d  customer_id=%s\n", 
-        orderID, rs.getString(1),  rs.getInt(2), rs.getString(3));
+      if (rs.next()) {
+        System.out.printf("order_id:%s  shipping:%s  charge=%d  customer_id=%s\n",
+            orderID, rs.getString(1), rs.getInt(2), rs.getString(3));
       }
-      
+
       var i = 1;
       rs = selectOrdering.executeQuery();
       while (rs.next()) {
         books.add(new Pair<>(rs.getString(1), rs.getInt(2)));
-        System.out.printf("book no: %d ISBN = %s quantity = %d\n", 
-        i++, rs.getString(1), rs.getInt(2));
+        System.out.printf("book no: %d ISBN = %s quantity = %d\n",
+            i++, rs.getString(1), rs.getInt(2));
       }
 
       // Impossible to be true
@@ -844,6 +850,7 @@ public class Project {
       System.out.println("Unknown Error.");
       e.printStackTrace();
     }
+    displayCustomerInterface();
   }
 
   // 5.2.4 Order Query
