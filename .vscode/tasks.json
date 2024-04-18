@@ -1,0 +1,37 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+    {
+      "label": "compile & run",
+      "type": "shell",
+      "command": "javac -cp '.:ojdbc7.jar' './csci3170project/*.java' && java -cp '.:ojdbc7.jar' csci3170project.Project",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "windows": {
+        "command": "javac -cp '.;ojdbc7.jar' './csci3170project/*.java'; java -cp '.;ojdbc7.jar' csci3170project.Project"
+      }
+    },
+    {
+      "label": "compile",
+      "type": "shell",
+      "command": "javac -cp '.:ojdbc7.jar' './csci3170project/*.java'",
+      "group": {
+          "kind": "build"
+      },
+      "windows": {
+        "command": "javac -cp '.;ojdbc7.jar' './csci3170project/*.java'"
+      }
+    },
+    {
+        "label": "run",
+        "type": "shell",
+        "command": "java -cp '.:ojdbc7.jar' csci3170project.Project",
+        "dependsOn": "compile",
+        "windows": {
+          "command": "java -cp '.;ojdbc7.jar' csci3170project.Project"
+        }
+    }
+  ]
+}
