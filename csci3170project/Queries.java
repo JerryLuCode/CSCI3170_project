@@ -6,10 +6,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class Queries {
-  static PreparedStatement 
-  
-      // 5.2.1 Book Search
-      selectBookByISBN = null,
+  static PreparedStatement
+
+  // 5.2.1 Book Search
+  selectBookByISBN = null,
       selectBookByTitle = null,
       selectBookByAuthor = null,
 
@@ -28,7 +28,11 @@ public class Queries {
       updateOrdering = null,
 
       // 5.2.4 Order Query
-      selectOrdersByCustomerID = null;
+      selectOrdersByCustomerID = null,
+
+      // 5.3.1 Order Update
+      selectOrderShippingStausQuan = null,
+      updateOrderShippingStatus = null;
 
   public static void main(String[] args) {
 
@@ -100,16 +104,16 @@ public class Queries {
           ORDER BY title, book.isbn, author_name
         """);
     selectBookByAuthor = conn.prepareStatement("""
-      SELECT title, book.isbn, unit_price, no_of_copies, author_name
-        FROM book, book_author
-        WHERE book.isbn IN (
-            SELECT isbn
-            FROM book_author
-            WHERE author_name = ?
-          ) 
-        and book.isbn = book_author.isbn
-        ORDER BY title, book.isbn, author_name
-        """);
+        SELECT title, book.isbn, unit_price, no_of_copies, author_name
+          FROM book, book_author
+          WHERE book.isbn IN (
+              SELECT isbn
+              FROM book_author
+              WHERE author_name = ?
+            )
+          and book.isbn = book_author.isbn
+          ORDER BY title, book.isbn, author_name
+          """);
 
     /*
      * 5.2.2. Order Creation
@@ -265,7 +269,18 @@ public class Queries {
           ORDER BY order_id
         """);
 
-
-
+    // 5.3.1. Order Update
+    selectOrderShippingStausQuan = conn.prepareStatement("""
+          SELECT shipping_status, sum(quantity)
+          FROM orders, ordering
+          WHERE orders.order_id = ? and orders.order_id = ordering.order_id
+          GROUP BY orders.order_id, shipping_status
+          """);
+    
+    updateOrderShippingStatus = conn.prepareStatement("""
+          UPDATE orders
+          SET shipping_status = 'Y'
+          WHERE order_id = ?
+          """);
   }
 }

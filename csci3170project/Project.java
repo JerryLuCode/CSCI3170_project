@@ -479,7 +479,7 @@ public class Project {
               1 :%s
               """, i++, curr_book, rs.getString("title"), rs.getInt("unit_price"),
               rs.getInt("no_of_copies"), rs.getString("author_name"));
-            j = 1;
+          j = 1;
         } else
           System.out.printf("%d :%s\n", ++j, rs.getString("author_name"));
       }
@@ -817,7 +817,7 @@ public class Project {
       updateCharge.setString(2, orderID);
       updateCharge.executeUpdate();
 
-      System.err.println("Update is ok!\nupdate done!!\nupdated charge");
+      System.out.println("Update is ok!\nupdate done!!\nupdated charge");
 
       // Select and display order & ordering info at last
       var rs = selectOrders.executeQuery();
@@ -953,6 +953,74 @@ public class Project {
       orderId = sc.nextLine();
     }
     // TODO: display order details if exists
+    try {
+      // selectOrderShippingStausQuan.setString(1, orderId);
+      // var rs = selectOrderShippingStausQuan.executeQuery();
+      // if (rs.next()) {
+      // String shipping_status = rs.getString(1);
+      // int quan = rs.getInt(2);
+      // System.out.printf("the Shipping status of %s is %s and %d books are
+      // ordered\n", orderId, shipping_status, quan);
+      // if (!shipping_status.equals("N")) {
+      // System.out.println("The order has been shipped.\n");
+      // displayBookstoreInterface();
+      // return;
+      // }
+
+      // if (quan < 1) {
+      // System.out.println("No book is ordered.");
+      // } else {
+      // System.out.print("Are you sure to update the shipping status? (Yes=Y) ");
+      // String choice = sc.nextLine();
+      // if (choice.equals("Y") || choice.equals("y")) {
+      // updateOrderShippingStatus.setString(1, orderId);
+      // updateOrderShippingStatus.executeUpdate();
+      // System.out.println("Updated shipping status");
+      // } else {
+      // System.out.println("The order has not been updated.");
+      // }
+      // }
+      // System.out.println();
+      // } else {
+      // System.out.println("Order not found.\n");
+      // }
+      // displayBookstoreInterface();
+      selectOrderShippingStausQuan.setString(1, orderId);
+      var rs = selectOrderShippingStausQuan.executeQuery();
+      if (!rs.next()) {
+        System.out.println("Order not found.\n");
+        displayBookstoreInterface();
+        return;
+      }
+
+      String shipping_status = rs.getString(1);
+      int quan = rs.getInt(2);
+      System.out.printf("the Shipping status of %s is %s and %d books are ordered\n", orderId, shipping_status, quan);
+      if (!shipping_status.equals("N")) {
+        System.out.println("The order has been shipped.\n");
+        displayBookstoreInterface();
+        return;
+      }
+
+      if (quan < 1) {
+        System.out.println("No book is ordered.\n");
+        displayBookstoreInterface();
+        return;
+      }
+
+      System.out.print("Are you sure to update the shipping status? (Yes=Y) ");
+      String choice = sc.nextLine();
+      if (choice.equals("Y") || choice.equals("y")) {
+        updateOrderShippingStatus.setString(1, orderId);
+        updateOrderShippingStatus.executeUpdate();
+        System.out.println("Updated shipping status\n");
+      } else {
+        System.out.println("The order has not been updated.\n");
+      }
+      displayBookstoreInterface();
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
   }
 
   private static void bookstoreOrderQuery() {
