@@ -945,46 +945,15 @@ public class Project {
   }
 
   private static void orderUpdate() {
-    System.out.print("Please input the order ID: ");
     String orderId = sc.nextLine();
+    System.out.print("Please input the order ID: ");
     while (!isValidOrderID(orderId)) {
       System.out.println("Invalid orderID. Please enter a valid orderID.");
       System.out.print("Please enter the orderId you want to change: ");
       orderId = sc.nextLine();
     }
-    // TODO: display order details if exists
-    try {
-      // selectOrderShippingStausQuan.setString(1, orderId);
-      // var rs = selectOrderShippingStausQuan.executeQuery();
-      // if (rs.next()) {
-      // String shipping_status = rs.getString(1);
-      // int quan = rs.getInt(2);
-      // System.out.printf("the Shipping status of %s is %s and %d books are
-      // ordered\n", orderId, shipping_status, quan);
-      // if (!shipping_status.equals("N")) {
-      // System.out.println("The order has been shipped.\n");
-      // displayBookstoreInterface();
-      // return;
-      // }
 
-      // if (quan < 1) {
-      // System.out.println("No book is ordered.");
-      // } else {
-      // System.out.print("Are you sure to update the shipping status? (Yes=Y) ");
-      // String choice = sc.nextLine();
-      // if (choice.equals("Y") || choice.equals("y")) {
-      // updateOrderShippingStatus.setString(1, orderId);
-      // updateOrderShippingStatus.executeUpdate();
-      // System.out.println("Updated shipping status");
-      // } else {
-      // System.out.println("The order has not been updated.");
-      // }
-      // }
-      // System.out.println();
-      // } else {
-      // System.out.println("Order not found.\n");
-      // }
-      // displayBookstoreInterface();
+    try {
       selectOrderShippingStausQuan.setString(1, orderId);
       var rs = selectOrderShippingStausQuan.executeQuery();
       if (!rs.next()) {
@@ -1017,6 +986,7 @@ public class Project {
       } else {
         System.out.println("The order has not been updated.\n");
       }
+
       displayBookstoreInterface();
     } catch (SQLException e) {
       e.printStackTrace();
@@ -1032,6 +1002,33 @@ public class Project {
       yyyymm = sc.nextLine();
     }
     // TODO: display order details with total charge
+
+    try {
+      var i = 1;
+      var charge = 0;
+      selectOrdersByMonth.setString(1, yyyymm.substring(0, 4));
+      selectOrdersByMonth.setString(2, yyyymm.substring(5, 7));
+      var rs = selectOrdersByMonth.executeQuery();
+      while (rs.next()) {
+        System.out.printf("""
+
+
+            Record : %d
+            order_id : %s
+            customer_id : %s
+            date : %s
+            charge : %d
+            """, i++, rs.getString(1), rs.getString(2),
+            rs.getDate(3), rs.getInt(4));
+        charge += rs.getInt(4);
+      }
+
+      System.out.println("\n\nTotal charges of the month is " + charge);
+      System.out.println();
+      displayBookstoreInterface();
+    } catch (SQLException sql) {
+      sql.printStackTrace();
+    }
   }
 
   private static void nMostPopularBookQuery() {

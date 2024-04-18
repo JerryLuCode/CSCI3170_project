@@ -228,3 +228,11 @@ public class Utils {
     }
   }
 }
+
+/*
+self use only: running on mac
+
+rm csci3170project/*.class
+javac csci3170project/*
+java -cp ./ojdbc7.jar:./ csci3170project/Project
+*/

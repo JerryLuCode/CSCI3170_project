@@ -32,7 +32,10 @@ public class Queries {
 
       // 5.3.1 Order Update
       selectOrderShippingStausQuan = null,
-      updateOrderShippingStatus = null;
+      updateOrderShippingStatus = null,
+
+      // 5.3.2 Order Query
+      selectOrdersByMonth = null;
 
   public static void main(String[] args) {
 
@@ -281,6 +284,14 @@ public class Queries {
           UPDATE orders
           SET shipping_status = 'Y'
           WHERE order_id = ?
+          """);
+
+    // 5.3.2. Order Query
+    selectOrdersByMonth = conn.prepareStatement("""
+          SELECT order_id, customer_id, o_date, charge
+          FROM orders
+          WHERE EXTRACT(YEAR FROM o_date) = ? and EXTRACT(MONTH FROM o_date) = ?
+          ORDER BY order_id
           """);
   }
 }
