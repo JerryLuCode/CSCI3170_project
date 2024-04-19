@@ -447,16 +447,7 @@ public class Project {
       while (rs.next()) {
         if (!rs.getString("isbn").equals(curr_book)) {
           curr_book = rs.getString("isbn");
-          System.out.printf("""
-
-              Record %d
-              ISBN: %s
-              Book Title:%s
-              Unit Price:%d
-              No of Copies Available:%d
-              Authors:
-              1 :%s
-              """, i++, curr_book, rs.getString("title"), rs.getInt("unit_price"),
+          System.out.printf("\n\nRecord %d\nISBN: %s\nBook Title:%s\nUnit Price:%d\nNo of Copies Available:%d\nAuthors:\n1 :%s\n", i++, curr_book, rs.getString("title"), rs.getInt("unit_price"),
               rs.getInt("no_of_copies"), rs.getString("author_name"));
           j = 1;
         } else
@@ -814,14 +805,7 @@ public class Project {
       var i = 1;
       var rs = selectOrdersByCustomerID.executeQuery();
       while (rs.next()) {
-        System.out.printf("""
-
-            Record : %d
-            OrderID : %s
-            OrderDate : %s
-            charge : %d
-            shipping status : %s
-            """, i++, rs.getString(1), rs.getDate(2),
+        System.out.printf("\n\nRecord : %d\nOrderID : %s\nOrderDate : %s\ncharge : %d\nshipping status : %s\n", i++, rs.getString(1), rs.getDate(2),
             rs.getInt(3), rs.getString(4));
       }
 
@@ -946,15 +930,7 @@ public class Project {
       selectOrdersByMonth.setString(2, yyyymm.substring(5, 7));
       var rs = selectOrdersByMonth.executeQuery();
       while (rs.next()) {
-        System.out.printf("""
-
-
-            Record : %d
-            order_id : %s
-            customer_id : %s
-            date : %s
-            charge : %d
-            """, i++, rs.getString(1), rs.getString(2),
+        System.out.printf("\n\nRecord : %d\norder_id : %s\ncustomer_id : %s\ndate : %s\ncharge : %d\n", i++, rs.getString(1), rs.getString(2),
             rs.getDate(3), rs.getInt(4));
         charge += rs.getInt(4);
       }
