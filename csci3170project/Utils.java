@@ -204,14 +204,14 @@ public class Utils {
 
   public static boolean readAddOrRemove(String str) {
     try {
-      return switch (str.toLowerCase().charAt(0)) {
+     switch (str.toLowerCase().charAt(0)) {
         case 'a':
-          yield true;
+          return true;
         case 'r':
-          yield false;
+        return false;
         default:
           throw new IllegalArgumentException("Invalid Option: " + str);
-      };
+      }
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException("Invalid Number Format: " + str);
     }
