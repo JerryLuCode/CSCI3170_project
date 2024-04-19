@@ -405,25 +405,25 @@ public class Project {
     PreparedStatement ps = null;
     do {
       try {
-        ps = switch (choice) {
+        switch (choice) {
           case 1:
             System.out.print("Input the ISBN: ");
             selectBookByISBN.setString(1, readISBN(sc.nextLine()));
-            yield selectBookByISBN;
+            ps =  selectBookByISBN;
 
           case 2:
             System.out.print("Input the Book Title: ");
             selectBookByTitle.setString(1, readBookTitle(sc.nextLine()));
-            yield selectBookByTitle;
+            ps =  selectBookByTitle;
 
           case 3:
             System.out.print("Input the Author Name: ");
             selectBookByAuthor.setString(1, readAuthor(sc.nextLine()));
-            yield selectBookByAuthor;
+            ps =  selectBookByAuthor;
 
           default:
             throw new IllegalArgumentException("Invalid choice. Please enter a valid option.");
-        };
+        }
       } catch (IllegalArgumentException e) {
         System.out.println(e.getMessage());
       } catch (SQLException e) {
