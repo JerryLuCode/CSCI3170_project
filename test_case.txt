@@ -1,0 +1,74 @@
+// 5.1.1 Create Table
+Case 1:
+1
+1
+
+// 5.1.2 Delete Table
+Case 1:
+2
+
+// 5.1.3 Insert Data
+Case 1:
+3
+test_data
+
+// 5.1.4 Set System Date
+Case 1:
+4
+20200101
+5
+
+// 5.2.1 Book Search
+Case 1:
+2
+1
+1
+1-1234-1234-1
+
+Case 2:
+1
+2
+D_t%
+
+Case 3:
+1
+3
+Ada
+
+// 5.2.2 Order Creation
+Case 1:
+2
+cwwong
+L
+4-4567-4567-4
+2
+L
+
+// 5.2.3 Order Altering
+Case 1:
+3
+00000002
+1
+add
+2
+
+// 5.2.4 Order Query
+Case 1:
+4
+hndai
+2005
+
+// 5.3.1 Order Update
+Case 1:
+1
+00000003
+Y
+
+// 5.3.2 Order Query
+Case 1:
+2
+2005-09
+
+// 5.3.3 N Most Popular Book Query
+3
+3
