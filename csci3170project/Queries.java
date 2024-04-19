@@ -51,6 +51,8 @@ public class Queries {
       selectOrdersByMonth = null,
 
       // 5.3.3 N Most Popular Book Query
+      selectNoOfBooks = null,
+      selectAllBook = null,
       selectNMostPopularBook = null;
 
   public static void main(String[] args) {
@@ -383,18 +385,56 @@ public class Queries {
         """);
 
     // 5.3.3 N Most Popular Book Query
+    selectNoOfBooks = conn.prepareStatement("""
+      SELECT COUNT(*)
+      FROM (
+      SELECT O.ISBN, B.TITLE, SUM(O.QUANTITY) AS NO_OF_COPIES
+      FROM ORDERING O
+      JOIN BOOK B ON O.ISBN = B.ISBN
+      GROUP BY O.ISBN, B.TITLE
+      ORDER BY ISBN DESC
+      )
+        """);
+
+    selectAllBook = conn.prepareStatement("""
+      SELECT ISBN, TITLE, NO_OF_COPIES
+      FROM (
+      SELECT O.ISBN, B.TITLE, SUM(O.QUANTITY) AS NO_OF_COPIES
+      FROM ORDERING O
+      JOIN BOOK B ON O.ISBN = B.ISBN
+      GROUP BY O.ISBN, B.TITLE
+      ORDER BY ISBN DESC
+      )
+      ORDER BY NO_OF_COPIES DESC
+        """);
+
     selectNMostPopularBook = conn.prepareStatement("""
-        SELECT B2.ISBN, B2.TITLE, B2.NO_OF_COPIES
-        FROM BOOK B2, (
-        SELECT N.NO_OF_COPIES
-        FROM (
-            SELECT B.*, ROW_NUMBER() OVER (ORDER BY B.NO_OF_COPIES DESC) AS ROW_NUM
-            FROM BOOK B
-        ) N
-        WHERE N.ROW_NUM = ?
-        ) N2
-        WHERE B2.NO_OF_COPIES >= N2.NO_OF_COPIES
-        ORDER BY B2.NO_OF_COPIES DESC
+      SELECT B2.ISBN, B2.TITLE, B2.NO_OF_COPIES
+      FROM (
+      SELECT A.*, ROW_NUMBER() OVER (ORDER BY A.NO_OF_COPIES DESC) AS ROW_NUM
+          FROM (
+            SELECT O.ISBN, B.TITLE, SUM(O.QUANTITY) AS NO_OF_COPIES
+            FROM ORDERING O
+            JOIN BOOK B ON O.ISBN = B.ISBN
+            GROUP BY O.ISBN, B.TITLE
+            ORDER BY ISBN DESC
+          ) A
+      )B2, (
+      SELECT N.NO_OF_COPIES
+      FROM (
+          SELECT A.*, ROW_NUMBER() OVER (ORDER BY A.NO_OF_COPIES DESC) AS ROW_NUM
+          FROM (
+            SELECT O.ISBN, B.TITLE, SUM(O.QUANTITY) AS NO_OF_COPIES
+            FROM ORDERING O
+            JOIN BOOK B ON O.ISBN = B.ISBN
+            GROUP BY O.ISBN, B.TITLE
+            ORDER BY ISBN DESC
+          ) A
+      ) N
+      WHERE N.ROW_NUM = ?
+      ) N2
+      WHERE B2.NO_OF_COPIES >= N2.NO_OF_COPIES
+      ORDER BY B2.NO_OF_COPIES DESC
         """);
   }
 }

@@ -970,11 +970,20 @@ public class Project {
     }
     // TODO: display N most popular books
     try {
-      selectNMostPopularBook.setString(1, N);
-      var rs = selectNMostPopularBook.executeQuery();
+      var check = selectNoOfBooks.executeQuery();
+      ResultSet rs = null;
+      check.next();
+      int no_book = check.getInt(1);
+      if (Integer.parseInt(N) > no_book) {
+        rs = selectAllBook.executeQuery();
+      }
+      else{
+        selectNMostPopularBook.setString(1, N);
+        rs = selectNMostPopularBook.executeQuery();
+      }
       System.out.println("ISBN            Title             copies");
       while (rs.next()) {
-        System.out.println(rs.getString(1) + " " + rs.getString(2) + " " + rs.getInt(3));
+        System.out.println(rs.getString(1)+ " " + rs.getString(2) + " " + rs.getInt(3));
       }
       System.out.println();
       displayBookstoreInterface();
