@@ -917,9 +917,8 @@ public class Project {
     System.out.println("3. N most Popular Book Query.");
     System.out.println("4. Back to main menu.\n");
 
-    System.out.print("Please enter your choice??..");
+    System.out.print("What is your choice??..");
     String choice = sc.nextLine();
-    System.out.println();
 
     switch (choice) {
       case "1":
@@ -945,8 +944,8 @@ public class Project {
   }
 
   private static void orderUpdate() {
-    String orderId = sc.nextLine();
     System.out.print("Please input the order ID: ");
+    String orderId = sc.nextLine();
     while (!isValidOrderID(orderId)) {
       System.out.println("Invalid orderID. Please enter a valid orderID.");
       System.out.print("Please enter the orderId you want to change: ");
@@ -1040,6 +1039,19 @@ public class Project {
       N = sc.nextLine();
     }
     // TODO: display N most popular books
+    try {
+      selectNMostPopularBook.setString(1, N);
+      var rs = selectNMostPopularBook.executeQuery();
+      System.out.println("ISBN            Title             copies");
+      while (rs.next()){
+        System.out.println(rs.getString(1) + " " + rs.getString(2) + " " + rs.getInt(3));
+      }
+      System.out.println();
+      displayBookstoreInterface();
+    } catch (SQLException sql) {
+      sql.printStackTrace();
+    }
+
   }
 
   // Utility functions

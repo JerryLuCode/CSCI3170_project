@@ -8,8 +8,8 @@ import java.sql.SQLException;
 public class Queries {
   static PreparedStatement
 
-  // 5.2.1 Book Search
-  selectBookByISBN = null,
+      // 5.2.1 Book Search
+      selectBookByISBN = null,
       selectBookByTitle = null,
       selectBookByAuthor = null,
 
@@ -35,7 +35,10 @@ public class Queries {
       updateOrderShippingStatus = null,
 
       // 5.3.2 Order Query
-      selectOrdersByMonth = null;
+      selectOrdersByMonth = null,
+      
+      // 5.3.3 N Most Popular Book Query
+      selectNMostPopularBook = null;
 
   public static void main(String[] args) {
 
@@ -292,6 +295,21 @@ public class Queries {
           FROM orders
           WHERE EXTRACT(YEAR FROM o_date) = ? and EXTRACT(MONTH FROM o_date) = ?
           ORDER BY order_id
+          """);
+
+     // 5.3.3 N Most Popular Book Query
+     selectNMostPopularBook = conn.prepareStatement("""
+          SELECT B2.ISBN, B2.TITLE, B2.NO_OF_COPIES
+          FROM BOOK B2, (
+          SELECT N.NO_OF_COPIES
+          FROM (
+              SELECT B.*, ROW_NUMBER() OVER (ORDER BY B.NO_OF_COPIES DESC) AS ROW_NUM
+              FROM BOOK B
+          ) N
+          WHERE N.ROW_NUM = ?
+          ) N2
+          WHERE B2.NO_OF_COPIES >= N2.NO_OF_COPIES
+          ORDER BY B2.NO_OF_COPIES DESC
           """);
   }
 }
