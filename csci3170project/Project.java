@@ -34,6 +34,8 @@ public class Project {
       Class.forName("oracle.jdbc.OracleDriver");
       // connectionnect to the database
       connection = DriverManager.getConnection(dbAddress, dbUsername, dbPassword);
+      connection.setAutoCommit(false);
+
       // Create a statement
       statement = connection.createStatement();
 
@@ -164,90 +166,48 @@ public class Project {
 
   private static void createTable() {
     try {
-      // Create the table
-      String createBook = """
-              CREATE TABLE Book (
-                  ISBN CHAR(13) PRIMARY KEY,
-                  title VARCHAR(100) NOT NULL,
-                  unit_price INT CHECK (unit_price >= 0),
-                  no_of_copies INT CHECK (no_of_copies >= 0)
-              )
-          """;
-      statement.executeUpdate(createBook);
+      createBookT.executeUpdate();
+      createCustomerT.executeUpdate();
+      createOrdersT.executeUpdate();
+      createOrderingT.executeUpdate();
+      createBookAuthorT.executeUpdate();
+      connection.commit();
 
-      String createCustomer = """
-              CREATE TABLE Customer (
-                  customer_id VARCHAR(10) PRIMARY KEY,
-                  name VARCHAR(50) NOT NULL,
-                  shipping_address VARCHAR(200) NOT NULL,
-                  credit_card_no CHAR(19)
-              )
-          """;
-      statement.executeUpdate(createCustomer);
-
-      String createOrder = """
-              CREATE TABLE Orders (
-                  order_id CHAR(8) PRIMARY KEY,
-                  o_date DATE NOT NULL,
-                  shipping_status CHAR(1) CHECK (shipping_status IN ('Y', 'N')),
-                  charge INT CHECK (charge >= 0),
-                  customer_id VARCHAR(10) NOT NULL,
-                  FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
-              )
-          """;
-      statement.executeUpdate(createOrder);
-
-      String createOrdering = """
-              CREATE TABLE Ordering (
-                  order_id CHAR(8),
-                  ISBN CHAR(13),
-                  quantity INT CHECK (quantity >= 0),
-                  FOREIGN KEY (order_id) REFERENCES Orders(order_id),
-                  FOREIGN KEY (ISBN) REFERENCES Book(ISBN),
-                  PRIMARY KEY (order_id, ISBN)
-              )
-          """;
-      statement.executeUpdate(createOrdering);
-      String createBookAuthor = """
-              CREATE TABLE Book_author (
-                  ISBN CHAR(13),
-                  author_name VARCHAR(50) NOT NULL,
-                  FOREIGN KEY (ISBN) REFERENCES Book(ISBN),
-                  PRIMARY KEY (ISBN, author_name)
-              )
-          """;
-      statement.executeUpdate(createBookAuthor);
       System.out.println("Table created successfully.\n");
       displaySystemInterface();
-    } catch (SQLException e) {
+    } catch (SQLException sql) {
+      try {
+        connection.rollback();
+      } catch (SQLException sql2) {
+        sql2.printStackTrace();
+      }
       System.out.println("Failed to create the table.");
-      e.printStackTrace();
+      // TODO:: don't do stacktrace
+      sql.printStackTrace();
     }
   }
 
   private static void deleteTable() {
     try {
       // Drop the table
-      String dropBookAuthor = "DROP TABLE Book_author";
-      statement.executeUpdate(dropBookAuthor);
-
-      String dropOrdering = "DROP TABLE Ordering";
-      statement.executeUpdate(dropOrdering);
-
-      String dropOrder = "DROP TABLE Orders";
-      statement.executeUpdate(dropOrder);
-
-      String dropBook = "DROP TABLE Book";
-      statement.executeUpdate(dropBook);
-
-      String dropCustomer = "DROP TABLE Customer";
-      statement.executeUpdate(dropCustomer);
+      dropBookAuthorT.executeUpdate();
+      dropOrderingT.executeUpdate();
+      dropOrderT.executeUpdate();
+      dropBookT.executeUpdate();
+      dropCustomerT.executeUpdate();
+      connection.commit();
 
       System.out.println("Table deleted successfully.\n");
       displaySystemInterface();
-    } catch (SQLException e) {
+    } catch (SQLException sql) {
+      try {
+        connection.rollback();
+      } catch (SQLException sql2) {
+        sql2.printStackTrace();
+      }
       System.out.println("Failed to delete the table.");
-      e.printStackTrace();
+      // TODO:: don't do stacktrace
+      sql.printStackTrace();
     }
   }
 
@@ -258,77 +218,93 @@ public class Project {
       System.out.print("Processing...");
 
       // Load the data
-      try (BufferedReader br = new BufferedReader(new FileReader(path + "/book.txt"))) {
-        String line;
-        String sql = "INSERT INTO Book (ISBN, title, unit_price, no_of_copies) VALUES (?, ?, ?, ?)";
-        PreparedStatement pstmt = connection.prepareStatement(sql);
+      String line = null;
+      try (var br = new BufferedReader(new FileReader(path + "/book.txt"))) {
         while ((line = br.readLine()) != null) {
           String[] data = line.split("\\|");
-          pstmt.setString(1, data[0]);
-          pstmt.setString(2, data[1]);
-          pstmt.setInt(3, Integer.parseInt(data[2]));
-          pstmt.setInt(4, Integer.parseInt(data[3]));
-          pstmt.executeUpdate();
+          insertBookData.setString(1, data[0]);
+          insertBookData.setString(2, data[1]);
+          insertBookData.setInt(3, Integer.parseInt(data[2]));
+          insertBookData.setInt(4, Integer.parseInt(data[3]));
+          insertBookData.executeUpdate();
         }
+      } catch (SQLException sql) {
+        System.out.println("Failed to insert book data: {" + line + "}");
+        throw new SQLException("Failed to insert book_author data: {" + line + "}");
       }
 
-      try (BufferedReader br = new BufferedReader(new FileReader(path + "/customer.txt"))) {
-        String line;
-        String sql = "INSERT INTO Customer (customer_id, name, shipping_address, credit_card_no) VALUES (?, ?, ?, ?)";
-        PreparedStatement pstmt = connection.prepareStatement(sql);
+      try (var br = new BufferedReader(new FileReader(path + "/customer.txt"))) {
         while ((line = br.readLine()) != null) {
           String[] data = line.split("\\|");
-          pstmt.setString(1, data[0]);
-          pstmt.setString(2, data[1]);
-          pstmt.setString(3, data[2]);
-          pstmt.setString(4, data[3]);
-          pstmt.executeUpdate();
+          insertBookAuthorData.setString(1, data[0]);
+          insertBookAuthorData.setString(2, data[1]);
+          insertBookAuthorData.setString(3, data[2]);
+          insertBookAuthorData.setString(4, data[3]);
+          insertBookAuthorData.executeUpdate();
         }
+      } catch (SQLException sql) {
+        System.out.println("Failed to insert customer data: {" + line + "}");
+        throw new SQLException("Failed to insert book_author data: {" + line + "}");
       }
 
-      try (BufferedReader br = new BufferedReader(new FileReader(path + "/orders.txt"))) {
-        String line;
-        String sql = "INSERT INTO Orders (order_id, o_date, shipping_status, charge, customer_id) VALUES (?, ?, ?, ?, ?)";
-        PreparedStatement pstmt = connection.prepareStatement(sql);
+      try (var br = new BufferedReader(new FileReader(path + "/orders.txt"))) {
         while ((line = br.readLine()) != null) {
           String[] data = line.split("\\|");
-          pstmt.setString(1, data[0]);
-          pstmt.setDate(2, Date.valueOf(data[1]));
-          pstmt.setString(3, data[2]);
-          pstmt.setInt(4, Integer.parseInt(data[3]));
-          pstmt.setString(5, data[4]);
-          pstmt.executeUpdate();
+          insertCustomerData.setString(1, data[0]);
+          insertCustomerData.setDate(2, Date.valueOf(data[1]));
+          insertCustomerData.setString(3, data[2]);
+          insertCustomerData.setInt(4, Integer.parseInt(data[3]));
+          insertCustomerData.setString(5, data[4]);
+          insertCustomerData.executeUpdate();
         }
+      } catch (SQLException sql) {
+        System.out.println("Failed to insert orders data: {" + line + "}");
+        throw new SQLException("Failed to insert book_author data: {" + line + "}");
       }
 
-      try (BufferedReader br = new BufferedReader(new FileReader(path + "/ordering.txt"))) {
-        String line;
-        String sql = "INSERT INTO Ordering (order_id, ISBN, quantity) VALUES (?, ?, ?)";
-        PreparedStatement pstmt = connection.prepareStatement(sql);
+      try (var br = new BufferedReader(new FileReader(path + "/ordering.txt"))) {
         while ((line = br.readLine()) != null) {
           String[] data = line.split("\\|");
-          pstmt.setString(1, data[0]);
-          pstmt.setString(2, data[1]);
-          pstmt.setInt(3, Integer.parseInt(data[2]));
-          pstmt.executeUpdate();
+          insertOrdersData.setString(1, data[0]);
+          insertOrdersData.setString(2, data[1]);
+          insertOrdersData.setInt(3, Integer.parseInt(data[2]));
+          insertOrdersData.executeUpdate();
         }
+      } catch (SQLException sql) {
+        System.out.println("Failed to insert ordering data: {" + line + "}");
+        throw new SQLException("Failed to insert book_author data: {" + line + "}");
       }
 
-      try (BufferedReader br = new BufferedReader(new FileReader(path + "/book_author.txt"))) {
-        String line;
-        String sql = "INSERT INTO Book_author (ISBN, author_name) VALUES (?, ?)";
-        PreparedStatement pstmt = connection.prepareStatement(sql);
+      try (var br = new BufferedReader(new FileReader(path + "/book_author.txt"))) {
         while ((line = br.readLine()) != null) {
           String[] data = line.split("\\|");
-          pstmt.setString(1, data[0]);
-          pstmt.setString(2, data[1]);
-          pstmt.executeUpdate();
+          insertOrderingData.setString(1, data[0]);
+          insertOrderingData.setString(2, data[1]);
+          insertOrderingData.executeUpdate();
         }
+      } catch (SQLException sql) {
+        System.out.println("Failed to insert book_author data: {" + line + "}");
+        throw new SQLException("Failed to insert book_author data: {" + line + "}");
       }
+
+      connection.commit();
 
       System.out.println("Data is loaded!");
       displaySystemInterface();
+    } catch (SQLException sql) {
+      try {
+        connection.rollback();
+      } catch (SQLException sql2) {
+        sql2.printStackTrace();
+      }
+      System.out.println("Failed to insert data.");
+      System.out.println(sql.getMessage());
     } catch (Exception e) {
+      try {
+        connection.rollback();
+      } catch (SQLException sql2) {
+        sql2.printStackTrace();
+      }
       System.out.println("Failed to insert data.");
       e.printStackTrace();
     }
@@ -337,8 +313,8 @@ public class Project {
   // https://www.javatpoint.com/java-string-to-date
   private static void setSystemDate() {
     System.out.print("Please input the date (YYYYMMDD): ");
-    String date = sc.nextLine();
-    while (date.length() != 8 || !date.matches("\\d+") || !isLaterDate(date)) {
+    var date = sc.nextLine();
+    while (date.length() != 8 || !date.matches("\\d+") || !isLaterDate(date, YYYY, MM, DD)) {
       System.out.println("Invalid input. Please enter a date later than " + YYYY + "-" + MM + "-" + DD + ".");
       System.out.print("Please input the date (YYYYMMDD): ");
       date = sc.nextLine();
@@ -348,9 +324,11 @@ public class Project {
     DD = date.substring(6, 8);
 
     try {
-      resultSet = statement.executeQuery("SELECT MAX(o_date) FROM Orders");
-      if (resultSet.next()) {
-        String latestDate = resultSet.getString(1);
+      var rs = selectMaxODate.executeQuery();
+
+      // TODO:: will crash when no order is available
+      if (rs.next()) {
+        var latestDate = rs.getString(1);
         System.out.println("Latest date in orders: " + latestDate.substring(0, 10));
         System.out.println("Today is " + YYYY + "-" + MM + "-" + DD);
         displaySystemInterface();
@@ -487,7 +465,6 @@ public class Project {
     } catch (SQLException e) {
       System.out.println("Failed to search the book.");
       e.printStackTrace();
-      bookSearch();
       return;
     } catch (Exception e) {
       // TODO: handle exception
@@ -496,74 +473,6 @@ public class Project {
     }
 
     displayCustomerInterface();
-    // switch (choice) {
-    // case "1":
-    // System.out.print("Input the ISBN: ");
-    // String ISBN = sc.nextLine();
-    // System.out.println();
-    // // search by ISBN
-    // try {
-    // String sql = "SELECT * FROM Book WHERE ISBN = ?";
-    // PreparedStatement pstmt = connection.prepareStatement(sql);
-    // pstmt.setString(1, ISBN);
-    // resultSet = pstmt.executeQuery();
-    // int count = 1;
-    // if (resultSet.next()) {
-    // System.out.println("Record " + count++);
-    // System.out.println("ISBN: " + resultSet.getString("ISBN"));
-    // System.out.println("Book Title: " + resultSet.getString("title"));
-    // System.out.println("Unit Price: " + resultSet.getInt("unit_price"));
-    // System.out.println("No of Available: " + resultSet.getInt("no_of_copies"));
-    // // search author name given ISBN
-    // try {
-    // String sql2 = "SELECT author_name FROM Book_author WHERE ISBN = ? ORDER BY
-    // author_name ASC";
-    // PreparedStatement pstmt2 = connection.prepareStatement(sql2);
-    // pstmt2.setString(1, ISBN);
-    // ResultSet resultSet2 = pstmt2.executeQuery();
-    // System.out.println("Author Name: ");
-    // int authorCount = 1;
-    // while (resultSet2.next()) {
-    // System.out.println(authorCount++ + ": " +
-    // resultSet2.getString("author_name"));
-    // }
-    // // not sure what this line is doing
-    // // System.out.println("Operation not allowed after ResultSet closed");
-    // System.out.println();
-    // } catch (SQLException e) {
-    // System.out.println("Failed to search the author name.");
-    // e.printStackTrace();
-    // }
-    // } else {
-    // System.out.println("cannot query the book");
-    // }
-    // System.out.println();
-    // displayCustomerInterface();
-    // } catch (SQLException e) {
-    // System.out.println("Failed to search the book by ISBN.");
-    // e.printStackTrace();
-    // }
-    // break;
-    // case "2":
-    // System.out.print("Input the Book Title: ");
-    // String bookTitle = sc.nextLine();
-    // System.out.println();
-    // // search by book title
-    // break;
-    // case "3":
-    // System.out.print("Input the Author Name: ");
-    // String authorName = sc.nextLine();
-    // System.out.println();
-    // // search by author name
-    // break;
-    // case "4":
-    // displayCustomerInterface();
-    // break;
-    // default:
-    // System.out.println("Invalid choice. Please enter a valid option.");
-    // bookSearch();
-    // break;
-    // }
   }
 
   private static void orderCreation() {
@@ -691,8 +600,16 @@ public class Project {
       updateCharge.setString(1, nextOrderID);
       updateCharge.setString(2, nextOrderID);
       updateCharge.executeUpdate();
+
+      connection.commit();
+
       displayCustomerInterface();
     } catch (SQLException sql) {
+      try {
+        connection.rollback();
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
       System.out.println("Failed to insertOrders. " + nextOrderID);
       sql.printStackTrace();
       orderCreation();
@@ -817,6 +734,8 @@ public class Project {
       updateCharge.setString(2, orderID);
       updateCharge.executeUpdate();
 
+      connection.commit();
+
       System.out.println("Update is ok!\nupdate done!!\nupdated charge");
 
       // Select and display order & ordering info at last
@@ -843,6 +762,7 @@ public class Project {
         return;
       }
 
+      displayCustomerInterface();
     } catch (SQLException sql) {
       System.out.println("Failed to updateOrdering.");
       sql.printStackTrace();
@@ -850,7 +770,11 @@ public class Project {
       System.out.println("Unknown Error.");
       e.printStackTrace();
     }
-    displayCustomerInterface();
+    try {
+      connection.rollback();
+    } catch (SQLException sql2) {
+      sql2.printStackTrace();
+    }
   }
 
   // 5.2.4 Order Query
@@ -981,14 +905,20 @@ public class Project {
       if (choice.equals("Y") || choice.equals("y")) {
         updateOrderShippingStatus.setString(1, orderId);
         updateOrderShippingStatus.executeUpdate();
+        connection.commit();
         System.out.println("Updated shipping status\n");
       } else {
         System.out.println("The order has not been updated.\n");
       }
 
       displayBookstoreInterface();
-    } catch (SQLException e) {
-      e.printStackTrace();
+    } catch (SQLException sql) {
+      try {
+        connection.rollback();
+      } catch (SQLException sql2) {
+        sql2.printStackTrace();
+      }
+      sql.printStackTrace();
     }
   }
 
@@ -1043,7 +973,7 @@ public class Project {
       selectNMostPopularBook.setString(1, N);
       var rs = selectNMostPopularBook.executeQuery();
       System.out.println("ISBN            Title             copies");
-      while (rs.next()){
+      while (rs.next()) {
         System.out.println(rs.getString(1) + " " + rs.getString(2) + " " + rs.getInt(3));
       }
       System.out.println();
@@ -1051,69 +981,5 @@ public class Project {
     } catch (SQLException sql) {
       sql.printStackTrace();
     }
-
-  }
-
-  // Utility functions
-  private static boolean isLaterDate(String date) {
-    int year = Integer.parseInt(date.substring(0, 4));
-    int month = Integer.parseInt(date.substring(4, 6));
-    int day = Integer.parseInt(date.substring(6, 8));
-    // check month
-    if (month < 1 || month > 12) {
-      return false;
-    }
-    // check day
-    if (day < 1 || day > getDaysInMonth(year, month)) {
-      return false;
-    }
-    return year > Integer.parseInt(YYYY) ||
-        (year == Integer.parseInt(YYYY) && month > Integer.parseInt(MM)) ||
-        (year == Integer.parseInt(YYYY) && month == Integer.parseInt(MM) && day > Integer.parseInt(DD));
-  }
-
-  private static int getDaysInMonth(int year, int month) {
-    switch (month) {
-      case 4:
-      case 6:
-      case 9:
-      case 11:
-        return 30;
-      case 2:
-        return (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) ? 29 : 28;
-      default:
-        return 31;
-    }
-  }
-
-  private static boolean isValidISBN(String ISBN) {
-    // ISBN: 13 chars with format "X-XXXX-XXXX-X", where X is a digit
-    String pattern = "^\\d-[\\d]{4}-[\\d]{4}-\\d$";
-    return ISBN.matches(pattern);
-  }
-
-  private static boolean isValidOrderID(String orderID) {
-    // Check if the orderID is 8 characters long
-    if (orderID.length() != 8) {
-      return false;
-    }
-
-    // Check if the orderID consists of only digits
-    if (!orderID.matches("\\d+")) {
-      return false;
-    }
-
-    // Check if the orderID is greater than or equal to "00000000"
-    if (orderID.compareTo("00000000") < 0) {
-      return false;
-    }
-
-    return true;
-  }
-
-  private static boolean isValidYYYYMM(String yyyymm) {
-    // Regular expression pattern for the month format: YYYY-MM
-    String pattern = "^\\d{4}-\\d{2}$";
-    return yyyymm.matches(pattern);
   }
 }

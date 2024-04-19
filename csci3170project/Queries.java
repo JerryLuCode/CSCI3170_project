@@ -8,6 +8,19 @@ import java.sql.SQLException;
 public class Queries {
   static PreparedStatement
 
+  // 5.1.1 Create Table
+  createBookT = null, createBookAuthorT = null, createCustomerT = null, createOrdersT = null, createOrderingT = null,
+
+      // 5.1.2 Delete Table
+      dropBookAuthorT = null, dropOrderingT = null, dropOrderT = null, dropBookT = null, dropCustomerT = null,
+
+      // 5.1.3 Insert Data
+      insertBookData = null, insertBookAuthorData = null, insertCustomerData = null, insertOrdersData = null,
+      insertOrderingData = null,
+
+      // 5.1.4 Set System Date
+      selectMaxODate = null,
+
       // 5.2.1 Book Search
       selectBookByISBN = null,
       selectBookByTitle = null,
@@ -36,7 +49,7 @@ public class Queries {
 
       // 5.3.2 Order Query
       selectOrdersByMonth = null,
-      
+
       // 5.3.3 N Most Popular Book Query
       selectNMostPopularBook = null;
 
@@ -62,6 +75,78 @@ public class Queries {
   }
 
   static void initQueries(Connection conn) throws SQLException {
+
+    // 5.1.1 Create Table
+    createBookT = conn.prepareStatement("""
+            CREATE TABLE Book (
+                ISBN CHAR(13) PRIMARY KEY,
+                title VARCHAR(100) NOT NULL,
+                unit_price INT CHECK (unit_price >= 0),
+                no_of_copies INT CHECK (no_of_copies >= 0)
+            )
+        """);
+
+    createCustomerT = conn.prepareStatement("""
+            CREATE TABLE Customer (
+                customer_id VARCHAR(10) PRIMARY KEY,
+                name VARCHAR(50) NOT NULL,
+                shipping_address VARCHAR(200) NOT NULL,
+                credit_card_no CHAR(19)
+            )
+        """);
+
+    createOrdersT = conn.prepareStatement("""
+            CREATE TABLE Orders (
+                order_id CHAR(8) PRIMARY KEY,
+                o_date DATE NOT NULL,
+                shipping_status CHAR(1) CHECK (shipping_status IN ('Y', 'N')),
+                charge INT CHECK (charge >= 0),
+                customer_id VARCHAR(10) NOT NULL,
+                FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
+            )
+        """);
+
+    createOrderingT = conn.prepareStatement("""
+            CREATE TABLE Ordering (
+                order_id CHAR(8),
+                ISBN CHAR(13),
+                quantity INT CHECK (quantity >= 0),
+                FOREIGN KEY (order_id) REFERENCES Orders(order_id),
+                FOREIGN KEY (ISBN) REFERENCES Book(ISBN),
+                PRIMARY KEY (order_id, ISBN)
+            )
+        """);
+
+    createBookAuthorT = conn.prepareStatement("""
+            CREATE TABLE Book_author (
+                ISBN CHAR(13),
+                author_name VARCHAR(50) NOT NULL,
+                FOREIGN KEY (ISBN) REFERENCES Book(ISBN),
+                PRIMARY KEY (ISBN, author_name)
+            )
+        """);
+
+    // 5.1.2 Delete Table
+    dropBookAuthorT = conn.prepareStatement("DROP TABLE Book_author");
+    dropOrderingT = conn.prepareStatement("DROP TABLE Ordering");
+    dropOrderT = conn.prepareStatement("DROP TABLE Orders");
+    dropBookT = conn.prepareStatement("DROP TABLE Book");
+    dropCustomerT = conn.prepareStatement("DROP TABLE Customer");
+
+    // 5.1.3 Insert Data
+    insertBookData = conn.prepareStatement(
+        "INSERT INTO Book (ISBN, title, unit_price, no_of_copies) VALUES (?, ?, ?, ?)");
+    insertBookAuthorData = conn.prepareStatement(
+        "INSERT INTO Customer (customer_id, name, shipping_address, credit_card_no) VALUES (?, ?, ?, ?)");
+    insertCustomerData = conn.prepareStatement(
+        "INSERT INTO Orders (order_id, o_date, shipping_status, charge, customer_id) VALUES (?, ?, ?, ?, ?)");
+    insertOrdersData = conn.prepareStatement(
+        "INSERT INTO Ordering (order_id, ISBN, quantity) VALUES (?, ?, ?)");
+    insertOrderingData = conn.prepareStatement(
+        "INSERT INTO Book_author (ISBN, author_name) VALUES (?, ?)");
+
+    // 5.1.4 Set System Date
+    selectMaxODate = conn.prepareStatement("SELECT MAX(o_date) FROM Orders");
 
     // 5.2 Customer Interface
     /*
@@ -277,39 +362,39 @@ public class Queries {
 
     // 5.3.1. Order Update
     selectOrderShippingStausQuan = conn.prepareStatement("""
-          SELECT shipping_status, sum(quantity)
-          FROM orders, ordering
-          WHERE orders.order_id = ? and orders.order_id = ordering.order_id
-          GROUP BY orders.order_id, shipping_status
-          """);
-    
+        SELECT shipping_status, sum(quantity)
+        FROM orders, ordering
+        WHERE orders.order_id = ? and orders.order_id = ordering.order_id
+        GROUP BY orders.order_id, shipping_status
+        """);
+
     updateOrderShippingStatus = conn.prepareStatement("""
-          UPDATE orders
-          SET shipping_status = 'Y'
-          WHERE order_id = ?
-          """);
+        UPDATE orders
+        SET shipping_status = 'Y'
+        WHERE order_id = ?
+        """);
 
     // 5.3.2. Order Query
     selectOrdersByMonth = conn.prepareStatement("""
-          SELECT order_id, customer_id, o_date, charge
-          FROM orders
-          WHERE EXTRACT(YEAR FROM o_date) = ? and EXTRACT(MONTH FROM o_date) = ?
-          ORDER BY order_id
-          """);
+        SELECT order_id, customer_id, o_date, charge
+        FROM orders
+        WHERE EXTRACT(YEAR FROM o_date) = ? and EXTRACT(MONTH FROM o_date) = ?
+        ORDER BY order_id
+        """);
 
-     // 5.3.3 N Most Popular Book Query
-     selectNMostPopularBook = conn.prepareStatement("""
-          SELECT B2.ISBN, B2.TITLE, B2.NO_OF_COPIES
-          FROM BOOK B2, (
-          SELECT N.NO_OF_COPIES
-          FROM (
-              SELECT B.*, ROW_NUMBER() OVER (ORDER BY B.NO_OF_COPIES DESC) AS ROW_NUM
-              FROM BOOK B
-          ) N
-          WHERE N.ROW_NUM = ?
-          ) N2
-          WHERE B2.NO_OF_COPIES >= N2.NO_OF_COPIES
-          ORDER BY B2.NO_OF_COPIES DESC
-          """);
+    // 5.3.3 N Most Popular Book Query
+    selectNMostPopularBook = conn.prepareStatement("""
+        SELECT B2.ISBN, B2.TITLE, B2.NO_OF_COPIES
+        FROM BOOK B2, (
+        SELECT N.NO_OF_COPIES
+        FROM (
+            SELECT B.*, ROW_NUMBER() OVER (ORDER BY B.NO_OF_COPIES DESC) AS ROW_NUM
+            FROM BOOK B
+        ) N
+        WHERE N.ROW_NUM = ?
+        ) N2
+        WHERE B2.NO_OF_COPIES >= N2.NO_OF_COPIES
+        ORDER BY B2.NO_OF_COPIES DESC
+        """);
   }
 }
