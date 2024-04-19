@@ -410,16 +410,19 @@ public class Project {
             System.out.print("Input the ISBN: ");
             selectBookByISBN.setString(1, readISBN(sc.nextLine()));
             ps =  selectBookByISBN;
+            break;
 
           case 2:
             System.out.print("Input the Book Title: ");
             selectBookByTitle.setString(1, readBookTitle(sc.nextLine()));
             ps =  selectBookByTitle;
+            break;
 
           case 3:
             System.out.print("Input the Author Name: ");
             selectBookByAuthor.setString(1, readAuthor(sc.nextLine()));
             ps =  selectBookByAuthor;
+            break;
 
           default:
             throw new IllegalArgumentException("Invalid choice. Please enter a valid option.");
