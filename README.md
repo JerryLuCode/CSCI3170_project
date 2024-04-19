@@ -28,7 +28,7 @@ javac -d ./out/ -classpath ".;ojdbc7.jar" "./csci3170project/*.java"
 java -classpath ".;ojdbc7.jar" csci3170project.Project
 ```
 
-Mac:
+Mac/Linux:
 <br>
 remove the .class files if needed
 ```

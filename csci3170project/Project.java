@@ -182,7 +182,6 @@ public class Project {
         sql2.printStackTrace();
       }
       System.out.println("Failed to create the table.");
-      // TODO:: don't do stacktrace
       sql.printStackTrace();
     }
   }
@@ -206,7 +205,6 @@ public class Project {
         sql2.printStackTrace();
       }
       System.out.println("Failed to delete the table.");
-      // TODO:: don't do stacktrace
       sql.printStackTrace();
     }
   }
@@ -326,7 +324,6 @@ public class Project {
     try {
       var rs = selectMaxODate.executeQuery();
 
-      // TODO:: will crash when no order is available
       if (rs.next()) {
         var latestDate = rs.getString(1);
         System.out.println("Latest date in orders: " + latestDate.substring(0, 10));
@@ -351,7 +348,6 @@ public class Project {
 
     System.out.print("What is your choice??..");
     String choice = sc.nextLine();
-    System.out.println();
 
     switch (choice) {
       case "1":
@@ -368,7 +364,6 @@ public class Project {
         break;
       case "4":
         // Order Query
-        System.out.println();
         customerOrderQuery();
         break;
       case "5":
@@ -437,7 +432,6 @@ public class Project {
         bookSearch();
         return;
       } catch (Exception e) {
-        // TODO: handle exception
         e.printStackTrace();
         return;
       }
@@ -462,7 +456,6 @@ public class Project {
       e.printStackTrace();
       return;
     } catch (Exception e) {
-      // TODO: handle exception
       e.printStackTrace();
       return;
     }
@@ -473,7 +466,7 @@ public class Project {
   private static void orderCreation() {
     String customerID;
     while (true) {
-      System.out.print("Please enter your customer ID??..");
+      System.out.print("Please enter your customerID??");
       customerID = sc.nextLine();
       try {
         selectCustomerByID.setString(1, customerID);
@@ -482,7 +475,7 @@ public class Project {
           customerID = rs.getString(1);
           break;
         }
-        System.out.println("Invalid Customer ID. Please enter a valid Customer ID.");
+        System.out.println("Invalid CustomerID. Please enter a valid CustomerID.");
       } catch (SQLException e) {
         System.out.println("Failed to selectCustomerByID.");
         e.printStackTrace();
@@ -495,9 +488,8 @@ public class Project {
     }
 
     System.out.println(">> What books do you want to order??");
-    System.out.println(">> Input ISBN then the quantity.");
+    System.out.println(">> Input ISBN and then the quantity.");
     System.out.println(">> You can press \"L\" to see ordered list, or \"F\" to finish ordering.");
-    System.out.print("Please input the book's ISBN: ");
     var map = new LinkedHashMap<String, Integer>();
     String ISBN;
     while (true) {
@@ -546,7 +538,7 @@ public class Project {
         continue;
       }
 
-      System.out.print("Please input the quantity: ");
+      System.out.print("Please input the quantity of the order: ");
       int quant = -1;
       do {
         try {
@@ -580,9 +572,6 @@ public class Project {
     }
 
     try {
-      System.out.println(YYYY + "-" + MM + "-" + DD);
-      System.out.println(readDate(YYYY + "-" + MM + "-" + DD));
-      System.out.println(Date.valueOf(readDate(YYYY + "-" + MM + "-" + DD)));
       insertOrders.setString(1, nextOrderID);
       insertOrders.setDate(2, Date.valueOf(readDate(YYYY + "-" + MM + "-" + DD)));
       insertOrders.setString(3, customerID);
@@ -621,12 +610,12 @@ public class Project {
     String orderID = null;
     do {
       try {
-        System.out.print("Please enter the orderId you want to change: ");
+        System.out.print("Please enter the OrderID that you want to change: ");
         var tmpOrderId = readOrderID(sc.nextLine());
         selectOrders.setString(1, tmpOrderId);
         var rs = selectOrders.executeQuery();
         if (rs.next()) {
-          System.out.printf("order_id:%s  shipping:%s  charge=%d  customer_id=%s\n",
+          System.out.printf("order_id:%s  shipping:%s  charge=%d  customerId=%s\n",
               orderID = tmpOrderId, rs.getString(1),
               rs.getInt(2), rs.getString(3));
           break;
@@ -664,7 +653,7 @@ public class Project {
 
     int bookNo = -1;
     do {
-      System.out.print("Which book do you want to alter (input book no.): ");
+      System.out.println("Which book do you want to alter (input book no.): ");
       try {
         bookNo = readPosNum(sc.nextLine(), books.size()) - 1;
       } catch (IllegalArgumentException e) {
@@ -742,7 +731,7 @@ public class Project {
 
       // Impossible to be false
       if (rs.next()) {
-        System.out.printf("order_id:%s  shipping:%s  charge=%d  customer_id=%s\n",
+        System.out.printf("order_id:%s  shipping:%s  charge=%d  customerId=%s\n",
             orderID, rs.getString(1), rs.getInt(2), rs.getString(3));
       }
 
@@ -881,7 +870,7 @@ public class Project {
 
       String shipping_status = rs.getString(1);
       int quan = rs.getInt(2);
-      System.out.printf("the Shipping status of %s is %s and %d books are ordered\n", orderId, shipping_status, quan);
+      System.out.printf("the Shipping status of %s is %s and %d books ordered\n", orderId, shipping_status, quan);
       if (!shipping_status.equals("N")) {
         System.out.println("The order has been shipped.\n");
         displayBookstoreInterface();
@@ -924,7 +913,6 @@ public class Project {
       System.out.print("Please input the Month for Order Query (e.g.2005-09): ");
       yyyymm = sc.nextLine();
     }
-    // TODO: display order details with total charge
 
     try {
       var i = 1;
