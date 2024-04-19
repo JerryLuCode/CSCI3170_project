@@ -289,7 +289,7 @@ public class Project {
 
       connection.commit();
 
-      System.out.println("Data is loaded!");
+      System.out.println("Data is loaded!\n");
       displaySystemInterface();
     } catch (SQLException sql) {
       try {
@@ -368,6 +368,7 @@ public class Project {
         break;
       case "4":
         // Order Query
+        System.out.println();
         customerOrderQuery();
         break;
       case "5":
@@ -565,6 +566,7 @@ public class Project {
 
       map.put(ISBN, quant);
     }
+    System.out.println();
 
     if (map.isEmpty()) {
       System.out.println("No book is ordered.");
@@ -584,6 +586,9 @@ public class Project {
     }
 
     try {
+      System.out.println(YYYY + "-" + MM + "-" + DD);
+      System.out.println(readDate(YYYY + "-" + MM + "-" + DD));
+      System.out.println(Date.valueOf(readDate(YYYY + "-" + MM + "-" + DD)));
       insertOrders.setString(1, nextOrderID);
       insertOrders.setDate(2, Date.valueOf(readDate(YYYY + "-" + MM + "-" + DD)));
       insertOrders.setString(3, customerID);
@@ -762,6 +767,7 @@ public class Project {
         return;
       }
 
+      System.out.println();
       displayCustomerInterface();
     } catch (SQLException sql) {
       System.out.println("Failed to updateOrdering.");
@@ -823,6 +829,7 @@ public class Project {
       if (i == 1)
         System.out.println("No order found.");
 
+      System.out.println();
       displayCustomerInterface();
     } catch (SQLException e) {
       System.out.println("Failed to selectOrdersByCustomerID.");
@@ -968,7 +975,6 @@ public class Project {
       System.out.print("Please input N: ");
       N = sc.nextLine();
     }
-    // TODO: display N most popular books
     try {
       var check = selectNoOfBooks.executeQuery();
       ResultSet rs = null;
