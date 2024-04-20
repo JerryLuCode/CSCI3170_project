@@ -32,11 +32,11 @@ Mac/Linux:
 <br>
 remove the .class files if needed
 ```
-rm csci3170project/*.class
+rm -rf csci3170project/*.class
 ```
 compile and run the project
 ```
-rm -rf csci3170project/*.class
+javac csci3170project/*
 java -cp ./ojdbc7.jar:./ csci3170project/Project
 ```
 
