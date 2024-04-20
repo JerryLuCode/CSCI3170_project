@@ -761,42 +761,45 @@ public class Project {
 
     // get upper limit of copies available if it is add, we can't buy more than
     // available
-    int maxQuant = books.get(bookNo).b;
-    if (isAdd)
-      try {
-        checkCopiesAvailable.setString(1, books.get(bookNo).a);
-        var rs = checkCopiesAvailable.executeQuery();
-        if (!rs.next()) {
-          System.out.println("Cannot find book.");
-          displayCustomerInterface();
-          return;
-        }
-
-        if ((maxQuant = rs.getInt(1)) < 1) {
-          System.out.println("No copies available.");
-          displayCustomerInterface();
-          return;
-        }
-      } catch (SQLException sql) {
-        System.out.println("Failed to check the copies available.");
-        sql.printStackTrace();
+    int maxAddRemove = books.get(bookNo).b;
+    int copiesAvailable = 0;
+    try {
+      checkCopiesAvailable.setString(1, books.get(bookNo).a);
+      var rs = checkCopiesAvailable.executeQuery();
+      if (!rs.next()) {
+        System.out.println("Cannot find book.");
+        displayCustomerInterface();
         return;
       }
+
+      if ((copiesAvailable = rs.getInt(1)) < 1 && isAdd) {
+        System.out.println("No copies available.");
+        displayCustomerInterface();
+        return;
+      }
+
+      if (isAdd) maxAddRemove = copiesAvailable;
+    } catch (SQLException sql) {
+      System.out.println("Failed to check the copies available.");
+      sql.printStackTrace();
+      return;
+    }
 
     int quant = -1;
     do {
       try {
         System.out.print("Input the number: ");
-        quant = readPosNum(sc.nextLine(), maxQuant);
+        quant = readPosNum(sc.nextLine(), maxAddRemove);
         break;
       } catch (IllegalArgumentException e) {
         System.out.println(e.getMessage());
-        System.out.println("The maximum copies available is " + maxQuant + ".");
+        System.out.println("The maximum copies available is " + maxAddRemove + ".");
       }
     } while (quant == -1);
 
     quant *= isAdd ? 1 : -1;
     try {
+      System.out.println(copiesAvailable + " " + maxAddRemove + " " + quant + " " + orderID + " " + books.get(bookNo).a);
       updateOrdering.setInt(1, books.get(bookNo).b + quant);
       updateOrdering.setString(2, orderID);
       updateOrdering.setString(3, books.get(bookNo).a);
@@ -812,7 +815,7 @@ public class Project {
       updateCharge.setString(2, orderID);
       updateCharge.executeUpdate();
 
-      updateNoOfCopies.setInt(1, maxQuant - quant);
+      updateNoOfCopies.setInt(1, copiesAvailable - quant);
       updateNoOfCopies.setString(2, books.get(bookNo).a);
       updateNoOfCopies.executeUpdate();
 
