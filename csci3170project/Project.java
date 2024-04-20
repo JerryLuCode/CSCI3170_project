@@ -51,11 +51,10 @@ public class Project {
           MM = latestDate.substring(5, 7);
           DD = latestDate.substring(8, 10);
         }
-      } catch (SQLException e) {
-        System.out.println("Failed to get the latest date in orders.");
+      } finally {
+        displayMainMenu();
       }
-
-      displayMainMenu();
+      
     } catch (ClassNotFoundException e) {
       System.err.println("Failed to load Oracle JDBC driver.");
       e.printStackTrace();
