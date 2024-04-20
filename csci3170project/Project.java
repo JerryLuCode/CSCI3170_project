@@ -4,6 +4,7 @@ import static csci3170project.Queries.*;
 import static csci3170project.Utils.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -568,7 +569,7 @@ public class Project {
     System.out.println(">> What books do you want to order??");
     System.out.println(">> Input ISBN and then the quantity.");
     System.out.println(">> You can press \"L\" to see ordered list, or \"F\" to finish ordering.");
-    var map = new LinkedHashMap<String, Integer>();
+    var map = new LinkedHashMap<String, int[]>();
     String ISBN;
     while (true) {
       System.out.print("Please input the book's ISBN: ");
@@ -581,7 +582,7 @@ public class Project {
         System.out.println("ISBN          Number:");
 
         for (var entry : map.entrySet())
-          System.out.printf("%s   %d\n", entry.getKey(), entry.getValue());
+          System.out.printf("%s   %d\n", entry.getKey(), entry.getValue()[1]);
         continue;
       } else if (!isValidISBN(ISBN)) {
         System.out.println("Invalid ISBN. Please enter a valid ISBN.");
@@ -601,7 +602,7 @@ public class Project {
           System.out.println("Cannot find book.");
           continue;
         }
-
+        
         if ((maxQuant = rs.getInt(1)) < 1) {
           System.out.println("No copies available.");
           continue;
@@ -628,7 +629,7 @@ public class Project {
         }
       } while (quant == -1);
 
-      map.put(ISBN, quant);
+      map.put(ISBN, new int[]{maxQuant, quant});
     }
     System.out.println();
 
@@ -656,10 +657,18 @@ public class Project {
       insertOrders.executeUpdate();
 
       for (var entry : map.entrySet()) {
+        var bookNo = entry.getKey();
+        var maxQuant = entry.getValue()[0];
+        var quant = entry.getValue()[1];
+        
         insertOrdering.setString(1, nextOrderID);
-        insertOrdering.setString(2, entry.getKey());
-        insertOrdering.setInt(3, entry.getValue());
+        insertOrdering.setString(2, bookNo);
+        insertOrdering.setInt(3, quant);
         insertOrdering.executeUpdate();
+        
+        updateNoOfCopies.setInt(1, maxQuant - quant);
+        updateNoOfCopies.setString(2, bookNo);
+        updateNoOfCopies.executeUpdate();
       }
 
       // Maye use trigger? it is fine now too, so whatever..
@@ -786,8 +795,9 @@ public class Project {
       }
     } while (quant == -1);
 
+    quant *= isAdd ? 1 : -1;
     try {
-      updateOrdering.setInt(1, books.get(bookNo).b + quant * (isAdd ? 1 : -1));
+      updateOrdering.setInt(1, books.get(bookNo).b + quant);
       updateOrdering.setString(2, orderID);
       updateOrdering.setString(3, books.get(bookNo).a);
       updateOrdering.executeUpdate();
@@ -801,6 +811,10 @@ public class Project {
       updateCharge.setString(1, orderID);
       updateCharge.setString(2, orderID);
       updateCharge.executeUpdate();
+
+      updateNoOfCopies.setInt(1, maxQuant - quant);
+      updateNoOfCopies.setString(2, books.get(bookNo).a);
+      updateNoOfCopies.executeUpdate();
 
       connection.commit();
       System.out.println("updated charge");

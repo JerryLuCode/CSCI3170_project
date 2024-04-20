@@ -204,11 +204,11 @@ public class Utils {
 
   public static boolean readAddOrRemove(String str) {
     try {
-     switch (str.toLowerCase().charAt(0)) {
+      switch (str.toLowerCase().charAt(0)) {
         case 'a':
           return true;
         case 'r':
-        return false;
+          return false;
         default:
           throw new IllegalArgumentException("Invalid Option: " + str);
       }
@@ -217,69 +217,68 @@ public class Utils {
     }
   }
 
-    // Utility functions
-    public static boolean isLaterDate(String date, String YYYY, String MM, String DD) {
-      int year = Integer.parseInt(date.substring(0, 4));
-      int month = Integer.parseInt(date.substring(4, 6));
-      int day = Integer.parseInt(date.substring(6, 8));
-      // check month
-      if (month < 1 || month > 12) {
-        return false;
-      }
-      // check day
-      if (day < 1 || day > getDaysInMonth(year, month)) {
-        return false;
-      }
-      return year > Integer.parseInt(YYYY) ||
-          (year == Integer.parseInt(YYYY) && month > Integer.parseInt(MM)) ||
-          (year == Integer.parseInt(YYYY) && month == Integer.parseInt(MM) && day > Integer.parseInt(DD));
+  // Utility functions
+  public static boolean isLaterDate(String date, String YYYY, String MM, String DD) {
+    int year = Integer.parseInt(date.substring(0, 4));
+    int month = Integer.parseInt(date.substring(4, 6));
+    int day = Integer.parseInt(date.substring(6, 8));
+    // check month
+    if (month < 1 || month > 12) {
+      return false;
     }
-  
-    public static int getDaysInMonth(int year, int month) {
-      switch (month) {
-        case 4:
-        case 6:
-        case 9:
-        case 11:
-          return 30;
-        case 2:
-          return (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) ? 29 : 28;
-        default:
-          return 31;
-      }
+    // check day
+    if (day < 1 || day > getDaysInMonth(year, month)) {
+      return false;
     }
-  
-    public static boolean isValidISBN(String ISBN) {
-      // ISBN: 13 chars with format "X-XXXX-XXXX-X", where X is a digit
-      String pattern = "^\\d-[\\d]{4}-[\\d]{4}-\\d$";
-      return ISBN.matches(pattern);
+    return year > Integer.parseInt(YYYY) ||
+        (year == Integer.parseInt(YYYY) && month > Integer.parseInt(MM)) ||
+        (year == Integer.parseInt(YYYY) && month == Integer.parseInt(MM) && day > Integer.parseInt(DD));
+  }
+
+  public static int getDaysInMonth(int year, int month) {
+    switch (month) {
+      case 4:
+      case 6:
+      case 9:
+      case 11:
+        return 30;
+      case 2:
+        return (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) ? 29 : 28;
+      default:
+        return 31;
     }
-  
-    public static boolean isValidOrderID(String orderID) {
-      // Check if the orderID is 8 characters long
-      if (orderID.length() != 8) {
-        return false;
-      }
-  
-      // Check if the orderID consists of only digits
-      if (!orderID.matches("\\d+")) {
-        return false;
-      }
-  
-      // Check if the orderID is greater than or equal to "00000000"
-      if (orderID.compareTo("00000000") < 0) {
-        return false;
-      }
-  
-      return true;
+  }
+
+  public static boolean isValidISBN(String ISBN) {
+    // ISBN: 13 chars with format "X-XXXX-XXXX-X", where X is a digit
+    String pattern = "^\\d-[\\d]{4}-[\\d]{4}-\\d$";
+    return ISBN.matches(pattern);
+  }
+
+  public static boolean isValidOrderID(String orderID) {
+    // Check if the orderID is 8 characters long
+    if (orderID.length() != 8) {
+      return false;
     }
-  
-    public static boolean isValidYYYYMM(String yyyymm) {
-      // Regular expression pattern for the month format: YYYY-MM
-      String pattern = "^\\d{4}-\\d{2}$";
-      return yyyymm.matches(pattern);
+
+    // Check if the orderID consists of only digits
+    if (!orderID.matches("\\d+")) {
+      return false;
     }
-  
+
+    // Check if the orderID is greater than or equal to "00000000"
+    if (orderID.compareTo("00000000") < 0) {
+      return false;
+    }
+
+    return true;
+  }
+
+  public static boolean isValidYYYYMM(String yyyymm) {
+    // Regular expression pattern for the month format: YYYY-MM
+    String pattern = "^\\d{4}-\\d{2}$";
+    return yyyymm.matches(pattern);
+  }
 
   public static class Pair<T, U> {
     public T a;
@@ -293,9 +292,9 @@ public class Utils {
 }
 
 /*
-self use only: running on mac
-
-rm csci3170project/*.class
-javac csci3170project/*
-java -cp ./ojdbc7.jar:./ csci3170project/Project
-*/
+ * self use only: running on mac
+ * 
+ * rm csci3170project/*.class
+ * javac csci3170project/*
+ * java -cp ./ojdbc7.jar:./ csci3170project/Project
+ */

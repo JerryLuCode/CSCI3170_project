@@ -39,6 +39,7 @@ public class Queries {
       selectOrdering = null,
       updateOrders = null,
       updateOrdering = null,
+      updateNoOfCopies = null,
 
       // 5.2.4 Order Query
       selectOrdersByCustomerID = null,
@@ -186,7 +187,7 @@ public class Queries {
 
     // return no_of_copies - sum of all ordering's quantity
     checkCopiesAvailable = conn.prepareStatement(
-        "SELECT no_of_copies - sum(case when book.isbn = ordering.isbn then quantity else 0 end) FROM book, ordering WHERE book.isbn = ? and book.isbn = ordering.isbn or book.isbn not in (SELECT isbn FROM ordering) GROUP BY book.isbn, no_of_copies");
+        "SELECT no_of_copies FROM book WHERE book.isbn = ? GROUP BY book.isbn, no_of_copies");
 
     getMaxOrderID = conn.prepareStatement("SELECT MAX(order_id) FROM orders ");
 
@@ -249,6 +250,7 @@ public class Queries {
     selectOrdering = conn.prepareStatement("SELECT isbn, quantity FROM ordering WHERE order_id = ? ");
     updateOrders = conn.prepareStatement("UPDATE orders SET o_date = ? WHERE order_id = ? ");
     updateOrdering = conn.prepareStatement("UPDATE ordering SET quantity = ? WHERE order_id = ? and isbn = ? ");
+    updateNoOfCopies = conn.prepareStatement("UPDATE book SET no_of_copies = ? WHERE isbn = ? ");
 
     /*
      * 5.2.4. Order Query
