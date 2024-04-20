@@ -197,7 +197,7 @@ public class Queries {
     insertOrdering = conn.prepareStatement("INSERT INTO ordering (order_id, isbn, quantity) VALUES (?, ?, ?) ");
 
     updateCharge = conn.prepareStatement(
-        "UPDATE orders SET charge = (SELECT sum(total) FROM (SELECT order_id, sum(unit_price + 10) * quantity + (case when quantity > 0 then 10 else 0 end) as total FROM book, ordering WHERE order_id = ? AND book.isbn = ordering.isbn GROUP BY order_id, quantity) GROUP BY order_id) WHERE order_id = ?");
+        "UPDATE orders SET charge = (SELECT SUM(total) +(CASE WHEN SUM(total) > 0 THEN 10 ELSE 0 END) AS TOTAL FROM (SELECT order_id, SUM(unit_price + 10)*quantity AS total FROM book INNER JOIN ordering ON book.isbn = ordering.isbn WHERE order_id = ? GROUP BY order_id, quantity) GROUP BY order_id) WHERE order_id = ?");
 
     /*
      * 5.2.3. Order Altering
