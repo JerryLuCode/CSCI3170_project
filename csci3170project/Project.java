@@ -183,6 +183,7 @@ public class Project {
         sql2.printStackTrace();
       }
       System.out.println("Failed to create the table.");
+      System.out.println();
       sql.printStackTrace();
       displaySystemInterface();
     }
@@ -207,7 +208,7 @@ public class Project {
         //sql2.printStackTrace();
       }
       System.out.println("Failed to delete the table.");
-      //sql.printStackTrace();
+      sql.printStackTrace();
       displaySystemInterface();
     }
   }
@@ -299,16 +300,15 @@ public class Project {
         sql2.printStackTrace();
       }
       System.out.println("Failed to insert data.");
-      displaySystemInterface();
-      //System.out.println(sql.getMessage());
+      System.out.println(sql.getMessage());
     } catch (Exception e) {
       try {
         connection.rollback();
       } catch (SQLException sql2) {
-        //sql2.printStackTrace();
+        sql2.printStackTrace();
       }
       System.out.println("Failed to insert data.");
-      //e.printStackTrace();
+      e.printStackTrace();
       displaySystemInterface();
     }
   }
@@ -378,6 +378,7 @@ public class Project {
         break;
       default:
         System.out.println("Invalid choice. Please enter a valid option.");
+        displayCustomerInterface();
         break;
     }
   }
@@ -409,7 +410,7 @@ public class Project {
         switch (choice) {
           case 1:
             System.out.print("Input the ISBN: ");
-            selectBookByISBN.setString(1, readISBN(sc.nextLine()));
+            selectBookByISBN.setString(1, readISBN(sc.nextLine())); 
             ps =  selectBookByISBN;
             break;
 
@@ -450,11 +451,14 @@ public class Project {
       while (rs.next()) {
         if (!rs.getString("isbn").equals(curr_book)) {
           curr_book = rs.getString("isbn");
-          System.out.printf("\n\nRecord %d\nISBN: %s\nBook Title:%s\nUnit Price:%d\nNo of Copies Available:%d\nAuthors:\n1 :%s\n", i++, curr_book, rs.getString("title"), rs.getInt("unit_price"),
+          System.out.printf("\nRecord %d\nISBN: %s\nBook Title:%s\nUnit Price:%d\nNo of Copies Available:%d\nAuthors:\n1 :%s\n", i++, curr_book, rs.getString("title"), rs.getInt("unit_price"),
               rs.getInt("no_of_copies"), rs.getString("author_name"));
           j = 1;
         } else
           System.out.printf("%d :%s\n", ++j, rs.getString("author_name"));
+      }
+      if (curr_book == null){
+        System.out.println("No book is found.");
       }
       System.out.println();
     } catch (SQLException e) {
@@ -852,6 +856,7 @@ public class Project {
         break;
       default:
         System.out.println("Invalid choice. Please enter a valid option.");
+        displayBookstoreInterface();
         break;
     }
   }
