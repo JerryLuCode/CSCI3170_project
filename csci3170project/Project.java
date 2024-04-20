@@ -25,6 +25,7 @@ public class Project {
   private static String YYYY = "2000";
   private static String MM = "01";
   private static String DD = "01";
+  private static boolean dateSet = false;
   private static Scanner sc = new Scanner(System.in);
 
   public static void main(String[] args) {
@@ -74,8 +75,23 @@ public class Project {
     }
   }
 
+
+
   // Main Menu
   private static void displayMainMenu() {
+    try {
+      var rs = selectMaxODate.executeQuery();
+
+      if (rs.next() && dateSet == false) {
+        var latestDate = rs.getString(1);
+        YYYY = latestDate.substring(0, 4);
+        MM = latestDate.substring(5, 7);
+        DD = latestDate.substring(8, 10);
+      }
+    } catch (SQLException e) {
+      System.out.println("Failed to get the latest date in orders.");
+      //e.printStackTrace();
+    }
     System.out.println("The system time is now: " + YYYY + "-" + MM + "-" + DD);
     System.out.println("<This is the Book Ordering System.>");
     System.out.println("-----------------------------------");
@@ -88,6 +104,7 @@ public class Project {
     System.out.print("Please enter your choice??..");
     String choice = sc.nextLine();
     System.out.println();
+    
 
     switch (choice) {
       case "1":
@@ -325,6 +342,7 @@ public class Project {
     YYYY = date.substring(0, 4);
     MM = date.substring(4, 6);
     DD = date.substring(6, 8);
+    dateSet = true;
 
     try {
       var rs = selectMaxODate.executeQuery();
