@@ -26,6 +26,9 @@ public class Project {
   private static String YYYY = "2000";
   private static String MM = "01";
   private static String DD = "01";
+  private static boolean dataLoaded = true;
+  private static boolean tableCreated = true;
+  private static boolean tableDeleted = true;
   private static Scanner sc = new Scanner(System.in);
 
   public static void main(String[] args) {
@@ -54,7 +57,7 @@ public class Project {
       } finally {
         displayMainMenu();
       }
-      
+
     } catch (ClassNotFoundException e) {
       System.err.println("Failed to load Oracle JDBC driver.");
       e.printStackTrace();
@@ -181,35 +184,44 @@ public class Project {
 
   private static void createTable() {
     try {
+      tableCreated = true;
       try {
         createBookT.executeUpdate();
       } catch (SQLException sql) {
+        tableCreated = false;
         System.out.println("Failed to create the table book.");
       }
       try {
         createCustomerT.executeUpdate();
       } catch (SQLException sql) {
+        tableCreated = false;
         System.out.println("Failed to create the table customer.");
       }
       try {
         createOrdersT.executeUpdate();
       } catch (SQLException sql) {
+        tableCreated = false;
         System.out.println("Failed to create the table orders.");
       }
       try {
         createOrderingT.executeUpdate();
       } catch (SQLException sql) {
+        tableCreated = false;
         System.out.println("Failed to create the table ordering.");
       }
       try {
         createBookAuthorT.executeUpdate();
       } catch (SQLException sql) {
+        tableCreated = false;
         System.out.println("Failed to create the table book_author.");
       }
       
       connection.commit();
 
-      System.out.println("Table created successfully.\n");
+      if (tableCreated){
+        System.out.println("Table created successfully.\n");
+      }
+
       displaySystemInterface();
     } catch (SQLException sql) {
       try {
@@ -227,34 +239,42 @@ public class Project {
   private static void deleteTable() {
     try {
       // Drop the table
+      tableDeleted = true;
       try {
         dropBookAuthorT.executeUpdate();
       } catch (SQLException sql) {
+        tableDeleted = false;
         System.out.println("Failed to delete the table book_author.");
       }
       try {
         dropOrderingT.executeUpdate();
       } catch (SQLException sql) {
+        tableDeleted = false;
         System.out.println("Failed to delete the table ordering.");
       }
       try {
         dropOrderT.executeUpdate();
       } catch (SQLException sql) {
+        tableDeleted = false;
         System.out.println("Failed to delete the table orders.");
       }
       try {
         dropBookT.executeUpdate();
       } catch (SQLException sql) {
+        tableDeleted = false;
         System.out.println("Failed to delete the table book.");
       }
       try {
         dropCustomerT.executeUpdate();
       } catch (SQLException sql) {
+        tableDeleted = false;
         System.out.println("Failed to delete the table customer.");
       }
       connection.commit();
 
-      System.out.println("Table deleted successfully.\n");
+      if (tableDeleted){
+        System.out.println("Table deleted successfully.\n");
+      }
       displaySystemInterface();
     } catch (SQLException sql) {
       try {
@@ -270,6 +290,7 @@ public class Project {
 
   private static void insertData() {
     System.out.println("Please enter the folder path");
+    dataLoaded = true;
     String path = sc.nextLine();
     try {
       System.out.print("Processing...");
@@ -286,8 +307,10 @@ public class Project {
           insertBookData.executeUpdate();
         }
       } catch (SQLException sql) {
+        dataLoaded = false;
         System.out.println("Failed to insert book data: {" + line + "}");
       } catch (FileNotFoundException e) {
+        dataLoaded = false;
         System.out.println("Failed to find the file book.txt.");
       }
 
@@ -301,8 +324,10 @@ public class Project {
           insertBookAuthorData.executeUpdate();
         }
       } catch (SQLException sql) {
+        dataLoaded = false;
         System.out.println("Failed to insert customer data: {" + line + "}");
       } catch (FileNotFoundException e) {
+        dataLoaded = false;
         System.out.println("Failed to find the file customer.txt.");
       }
 
@@ -317,8 +342,10 @@ public class Project {
           insertCustomerData.executeUpdate();
         }
       } catch (SQLException sql) {
+        dataLoaded = false;
         System.out.println("Failed to insert orders data: {" + line + "}");
       } catch (FileNotFoundException e) {
+        dataLoaded = false;
         System.out.println("Failed to find the file orders.txt.");
       }
 
@@ -331,8 +358,10 @@ public class Project {
           insertOrdersData.executeUpdate();
         }
       } catch (SQLException sql) {
+        dataLoaded = false;
         System.out.println("Failed to insert ordering data: {" + line + "}");
       } catch (FileNotFoundException e) {
+        dataLoaded = false;
         System.out.println("Failed to find the file ordering.txt.");
       }
 
@@ -344,14 +373,18 @@ public class Project {
           insertOrderingData.executeUpdate();
         }
       } catch (SQLException sql) {
+        dataLoaded = false;
         System.out.println("Failed to insert book_author data: {" + line + "}");
       } catch (FileNotFoundException e) {
+        dataLoaded = false;
         System.out.println("Failed to find the file book_author.txt.");
       }
 
       connection.commit();
 
-      System.out.println("Data is loaded!\n");
+      if (dataLoaded){
+        System.out.println("Data is loaded!\n");
+      }
       displaySystemInterface();
     } catch (SQLException sql) {
       try {
