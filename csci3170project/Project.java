@@ -25,6 +25,7 @@ public class Project {
   private static String MM = "01";
   private static String DD = "01";
   private static boolean dateSet = false;
+  private static boolean dateInsert = false;
   private static Scanner sc = new Scanner(System.in);
 
   public static void main(String[] args) {
@@ -79,14 +80,13 @@ public class Project {
     try {
       var rs = selectMaxODate.executeQuery();
 
-      if (rs.next() && dateSet == false) {
+      if (rs.next() && dateSet == false && dateInsert == true) {
         var latestDate = rs.getString(1);
         YYYY = latestDate.substring(0, 4);
         MM = latestDate.substring(5, 7);
         DD = latestDate.substring(8, 10);
       }
     } catch (SQLException e) {
-      System.out.println("Failed to get the latest date in orders.");
       // e.printStackTrace();
     }
     System.out.println("The system time is now: " + YYYY + "-" + MM + "-" + DD);
@@ -344,6 +344,7 @@ public class Project {
       }
 
       connection.commit();
+      dateInsert = true;
 
       System.out.println("Data is loaded!\n");
       displaySystemInterface();
