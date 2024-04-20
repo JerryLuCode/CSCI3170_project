@@ -160,6 +160,7 @@ public class Project {
         break;
       default:
         System.out.println("Invalid choice. Please enter a valid option.");
+        displaySystemInterface();
         break;
     }
   }
@@ -183,6 +184,7 @@ public class Project {
       }
       System.out.println("Failed to create the table.");
       sql.printStackTrace();
+      displaySystemInterface();
     }
   }
 
@@ -202,10 +204,11 @@ public class Project {
       try {
         connection.rollback();
       } catch (SQLException sql2) {
-        sql2.printStackTrace();
+        //sql2.printStackTrace();
       }
       System.out.println("Failed to delete the table.");
-      sql.printStackTrace();
+      //sql.printStackTrace();
+      displaySystemInterface();
     }
   }
 
@@ -228,7 +231,7 @@ public class Project {
         }
       } catch (SQLException sql) {
         System.out.println("Failed to insert book data: {" + line + "}");
-        throw new SQLException("Failed to insert book_author data: {" + line + "}");
+        //throw new SQLException("Failed to insert book_author data: {" + line + "}");
       }
 
       try (var br = new BufferedReader(new FileReader(path + "/customer.txt"))) {
@@ -242,7 +245,7 @@ public class Project {
         }
       } catch (SQLException sql) {
         System.out.println("Failed to insert customer data: {" + line + "}");
-        throw new SQLException("Failed to insert book_author data: {" + line + "}");
+        //throw new SQLException("Failed to insert book_author data: {" + line + "}");
       }
 
       try (var br = new BufferedReader(new FileReader(path + "/orders.txt"))) {
@@ -257,7 +260,7 @@ public class Project {
         }
       } catch (SQLException sql) {
         System.out.println("Failed to insert orders data: {" + line + "}");
-        throw new SQLException("Failed to insert book_author data: {" + line + "}");
+        //throw new SQLException("Failed to insert book_author data: {" + line + "}");
       }
 
       try (var br = new BufferedReader(new FileReader(path + "/ordering.txt"))) {
@@ -270,7 +273,7 @@ public class Project {
         }
       } catch (SQLException sql) {
         System.out.println("Failed to insert ordering data: {" + line + "}");
-        throw new SQLException("Failed to insert book_author data: {" + line + "}");
+        //throw new SQLException("Failed to insert book_author data: {" + line + "}");
       }
 
       try (var br = new BufferedReader(new FileReader(path + "/book_author.txt"))) {
@@ -282,7 +285,7 @@ public class Project {
         }
       } catch (SQLException sql) {
         System.out.println("Failed to insert book_author data: {" + line + "}");
-        throw new SQLException("Failed to insert book_author data: {" + line + "}");
+        //throw new SQLException("Failed to insert book_author data: {" + line + "}");
       }
 
       connection.commit();
@@ -296,15 +299,17 @@ public class Project {
         sql2.printStackTrace();
       }
       System.out.println("Failed to insert data.");
-      System.out.println(sql.getMessage());
+      displaySystemInterface();
+      //System.out.println(sql.getMessage());
     } catch (Exception e) {
       try {
         connection.rollback();
       } catch (SQLException sql2) {
-        sql2.printStackTrace();
+        //sql2.printStackTrace();
       }
       System.out.println("Failed to insert data.");
-      e.printStackTrace();
+      //e.printStackTrace();
+      displaySystemInterface();
     }
   }
 
@@ -332,7 +337,8 @@ public class Project {
       }
     } catch (SQLException e) {
       System.out.println("Failed to get the latest date in orders.");
-      e.printStackTrace();
+      //e.printStackTrace();
+      displaySystemInterface();
     }
   }
 
