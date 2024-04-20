@@ -36,7 +36,7 @@ rm csci3170project/*.class
 ```
 compile and run the project
 ```
-javac csci3170project/*
+rm -rf csci3170project/*.class
 java -cp ./ojdbc7.jar:./ csci3170project/Project
 ```
 
