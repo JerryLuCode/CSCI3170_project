@@ -351,6 +351,7 @@ public class Project {
       }
 
       connection.commit();
+      dateInsert = true;
 
       System.out.println("Data is loaded!\n");
       displaySystemInterface();
