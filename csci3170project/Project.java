@@ -22,7 +22,7 @@ public class Project {
   private static ResultSet resultSet = null;
 
   private static LocalDate date = LocalDate.of(0, 1, 1);
-  private static String YYYY = "0000";
+  private static String YYYY = "2000";
   private static String MM = "01";
   private static String DD = "01";
   private static Scanner sc = new Scanner(System.in);
