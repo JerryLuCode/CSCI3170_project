@@ -75,8 +75,6 @@ public class Project {
     }
   }
 
-
-
   // Main Menu
   private static void displayMainMenu() {
     try {
@@ -90,7 +88,7 @@ public class Project {
       }
     } catch (SQLException e) {
       System.out.println("Failed to get the latest date in orders.");
-      //e.printStackTrace();
+      // e.printStackTrace();
     }
     System.out.println("The system time is now: " + YYYY + "-" + MM + "-" + DD);
     System.out.println("<This is the Book Ordering System.>");
@@ -104,7 +102,6 @@ public class Project {
     System.out.print("Please enter your choice??..");
     String choice = sc.nextLine();
     System.out.println();
-    
 
     switch (choice) {
       case "1":
@@ -184,11 +181,32 @@ public class Project {
 
   private static void createTable() {
     try {
-      createBookT.executeUpdate();
-      createCustomerT.executeUpdate();
-      createOrdersT.executeUpdate();
-      createOrderingT.executeUpdate();
-      createBookAuthorT.executeUpdate();
+      try {
+        createBookT.executeUpdate();
+      } catch (SQLException sql) {
+        System.out.println("Failed to create the table book.");
+      }
+      try {
+        createCustomerT.executeUpdate();
+      } catch (SQLException sql) {
+        System.out.println("Failed to create the table customer.");
+      }
+      try {
+        createOrdersT.executeUpdate();
+      } catch (SQLException sql) {
+        System.out.println("Failed to create the table orders.");
+      }
+      try {
+        createOrderingT.executeUpdate();
+      } catch (SQLException sql) {
+        System.out.println("Failed to create the table ordering.");
+      }
+      try {
+        createBookAuthorT.executeUpdate();
+      } catch (SQLException sql) {
+        System.out.println("Failed to create the table book_author.");
+      }
+      
       connection.commit();
 
       System.out.println("Table created successfully.\n");
@@ -209,11 +227,31 @@ public class Project {
   private static void deleteTable() {
     try {
       // Drop the table
-      dropBookAuthorT.executeUpdate();
-      dropOrderingT.executeUpdate();
-      dropOrderT.executeUpdate();
-      dropBookT.executeUpdate();
-      dropCustomerT.executeUpdate();
+      try {
+        dropBookAuthorT.executeUpdate();
+      } catch (SQLException sql) {
+        System.out.println("Failed to delete the table book_author.");
+      }
+      try {
+        dropOrderingT.executeUpdate();
+      } catch (SQLException sql) {
+        System.out.println("Failed to delete the table ordering.");
+      }
+      try {
+        dropOrderT.executeUpdate();
+      } catch (SQLException sql) {
+        System.out.println("Failed to delete the table orders.");
+      }
+      try {
+        dropBookT.executeUpdate();
+      } catch (SQLException sql) {
+        System.out.println("Failed to delete the table book.");
+      }
+      try {
+        dropCustomerT.executeUpdate();
+      } catch (SQLException sql) {
+        System.out.println("Failed to delete the table customer.");
+      }
       connection.commit();
 
       System.out.println("Table deleted successfully.\n");
@@ -222,7 +260,7 @@ public class Project {
       try {
         connection.rollback();
       } catch (SQLException sql2) {
-        //sql2.printStackTrace();
+        // sql2.printStackTrace();
       }
       System.out.println("Failed to delete the table.");
       sql.printStackTrace();
@@ -355,7 +393,7 @@ public class Project {
       }
     } catch (SQLException e) {
       System.out.println("Failed to get the latest date in orders.");
-      //e.printStackTrace();
+      // e.printStackTrace();
       displaySystemInterface();
     }
   }
@@ -428,20 +466,20 @@ public class Project {
         switch (choice) {
           case 1:
             System.out.print("Input the ISBN: ");
-            selectBookByISBN.setString(1, readISBN(sc.nextLine())); 
-            ps =  selectBookByISBN;
+            selectBookByISBN.setString(1, readISBN(sc.nextLine()));
+            ps = selectBookByISBN;
             break;
 
           case 2:
             System.out.print("Input the Book Title: ");
             selectBookByTitle.setString(1, readBookTitle(sc.nextLine()));
-            ps =  selectBookByTitle;
+            ps = selectBookByTitle;
             break;
 
           case 3:
             System.out.print("Input the Author Name: ");
             selectBookByAuthor.setString(1, readAuthor(sc.nextLine()));
-            ps =  selectBookByAuthor;
+            ps = selectBookByAuthor;
             break;
 
           default:
@@ -469,13 +507,15 @@ public class Project {
       while (rs.next()) {
         if (!rs.getString("isbn").equals(curr_book)) {
           curr_book = rs.getString("isbn");
-          System.out.printf("\nRecord %d\nISBN: %s\nBook Title:%s\nUnit Price:%d\nNo of Copies Available:%d\nAuthors:\n1 :%s\n", i++, curr_book, rs.getString("title"), rs.getInt("unit_price"),
+          System.out.printf(
+              "\nRecord %d\nISBN: %s\nBook Title:%s\nUnit Price:%d\nNo of Copies Available:%d\nAuthors:\n1 :%s\n", i++,
+              curr_book, rs.getString("title"), rs.getInt("unit_price"),
               rs.getInt("no_of_copies"), rs.getString("author_name"));
           j = 1;
         } else
           System.out.printf("%d :%s\n", ++j, rs.getString("author_name"));
       }
-      if (curr_book == null){
+      if (curr_book == null) {
         System.out.println("No book is found.");
       }
       System.out.println();
@@ -825,7 +865,8 @@ public class Project {
       var i = 1;
       var rs = selectOrdersByCustomerID.executeQuery();
       while (rs.next()) {
-        System.out.printf("\n\nRecord : %d\nOrderID : %s\nOrderDate : %s\ncharge : %d\nshipping status : %s\n", i++, rs.getString(1), rs.getDate(2),
+        System.out.printf("\n\nRecord : %d\nOrderID : %s\nOrderDate : %s\ncharge : %d\nshipping status : %s\n", i++,
+            rs.getString(1), rs.getDate(2),
             rs.getInt(3), rs.getString(4));
       }
 
@@ -950,7 +991,8 @@ public class Project {
       selectOrdersByMonth.setString(2, yyyymm.substring(5, 7));
       var rs = selectOrdersByMonth.executeQuery();
       while (rs.next()) {
-        System.out.printf("\n\nRecord : %d\norder_id : %s\ncustomer_id : %s\ndate : %s\ncharge : %d\n", i++, rs.getString(1), rs.getString(2),
+        System.out.printf("\n\nRecord : %d\norder_id : %s\ncustomer_id : %s\ndate : %s\ncharge : %d\n", i++,
+            rs.getString(1), rs.getString(2),
             rs.getDate(3), rs.getInt(4));
         charge += rs.getInt(4);
       }
@@ -978,14 +1020,13 @@ public class Project {
       int no_book = check.getInt(1);
       if (Integer.parseInt(N) > no_book) {
         rs = selectAllBook.executeQuery();
-      }
-      else{
+      } else {
         selectNMostPopularBook.setString(1, N);
         rs = selectNMostPopularBook.executeQuery();
       }
       System.out.println("ISBN            Title             copies");
       while (rs.next()) {
-        System.out.println(rs.getString(1)+ " " + rs.getString(2) + " " + rs.getInt(3));
+        System.out.println(rs.getString(1) + " " + rs.getString(2) + " " + rs.getInt(3));
       }
       System.out.println();
       displayBookstoreInterface();

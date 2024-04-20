@@ -79,15 +79,20 @@ public class Queries {
   static void initQueries(Connection conn) throws SQLException {
 
     // 5.1.1 Create Table
-    createBookT = conn.prepareStatement("            CREATE TABLE Book (                ISBN CHAR(13) PRIMARY KEY,                title VARCHAR(100) NOT NULL,                unit_price INT CHECK (unit_price >= 0),                no_of_copies INT CHECK (no_of_copies >= 0)            )        ");
+    createBookT = conn.prepareStatement(
+         "CREATE TABLE Book ( ISBN CHAR(13) PRIMARY KEY, title VARCHAR(100) NOT NULL, unit_price INT CHECK (unit_price >= 0), no_of_copies INT CHECK (no_of_copies >= 0) ) ");
 
-    createCustomerT = conn.prepareStatement("            CREATE TABLE Customer (                customer_id VARCHAR(10) PRIMARY KEY,                name VARCHAR(50) NOT NULL,                shipping_address VARCHAR(200) NOT NULL,                credit_card_no CHAR(19)            )        ");
+    createCustomerT = conn.prepareStatement(
+         "CREATE TABLE Customer ( customer_id VARCHAR(10) PRIMARY KEY, name VARCHAR(50) NOT NULL, shipping_address VARCHAR(200) NOT NULL, credit_card_no CHAR(19) ) ");
 
-    createOrdersT = conn.prepareStatement("            CREATE TABLE Orders (                order_id CHAR(8) PRIMARY KEY,                o_date DATE NOT NULL,                shipping_status CHAR(1) CHECK (shipping_status IN ('Y', 'N')),                charge INT CHECK (charge >= 0),                customer_id VARCHAR(10) NOT NULL,                FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)            )        ");
+    createOrdersT = conn.prepareStatement(
+         "CREATE TABLE Orders ( order_id CHAR(8) PRIMARY KEY, o_date DATE NOT NULL, shipping_status CHAR(1) CHECK (shipping_status IN ('Y', 'N')), charge INT CHECK (charge >= 0), customer_id VARCHAR(10) NOT NULL, FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ) ");
 
-    createOrderingT = conn.prepareStatement("            CREATE TABLE Ordering (                order_id CHAR(8),                ISBN CHAR(13),                quantity INT CHECK (quantity >= 0),                FOREIGN KEY (order_id) REFERENCES Orders(order_id),                FOREIGN KEY (ISBN) REFERENCES Book(ISBN),                PRIMARY KEY (order_id, ISBN)            )        ");
+    createOrderingT = conn.prepareStatement(
+         "CREATE TABLE Ordering ( order_id CHAR(8), ISBN CHAR(13), quantity INT CHECK (quantity >= 0), FOREIGN KEY (order_id) REFERENCES Orders(order_id), FOREIGN KEY (ISBN) REFERENCES Book(ISBN), PRIMARY KEY (order_id, ISBN) ) ");
 
-    createBookAuthorT = conn.prepareStatement("            CREATE TABLE Book_author (                ISBN CHAR(13),                author_name VARCHAR(50) NOT NULL,                FOREIGN KEY (ISBN) REFERENCES Book(ISBN),                PRIMARY KEY (ISBN, author_name)            )        ");
+    createBookAuthorT = conn.prepareStatement(
+         "CREATE TABLE Book_author ( ISBN CHAR(13), author_name VARCHAR(50) NOT NULL, FOREIGN KEY (ISBN) REFERENCES Book(ISBN), PRIMARY KEY (ISBN, author_name) ) ");
 
     // 5.1.2 Delete Table
     dropBookAuthorT = conn.prepareStatement("DROP TABLE Book_author");
@@ -145,9 +150,12 @@ public class Queries {
      * ascending order by "ISBN". In each book, the author should be sorted in
      * ascending order by "Author Name".
      */
-    selectBookByISBN = conn.prepareStatement("        SELECT title, book.isbn, unit_price, no_of_copies, author_name          FROM book, book_author          WHERE book.isbn = ? and book.isbn = book_author.isbn          ORDER BY title, book.isbn, author_name        ");
-    selectBookByTitle = conn.prepareStatement("        SELECT title, book.isbn, unit_price, no_of_copies, author_name          FROM book, book_author          WHERE title LIKE ? and book.isbn = book_author.isbn          ORDER BY title, book.isbn, author_name        ");
-    selectBookByAuthor = conn.prepareStatement("        SELECT title, book.isbn, unit_price, no_of_copies, author_name          FROM book, book_author          WHERE book.isbn IN (              SELECT isbn              FROM book_author              WHERE author_name LIKE ?            )          and book.isbn = book_author.isbn          ORDER BY title, book.isbn, author_name          ");
+    selectBookByISBN = conn.prepareStatement(
+         "SELECT title, book.isbn, unit_price, no_of_copies, author_name FROM book, book_author WHERE book.isbn = ? and book.isbn = book_author.isbn ORDER BY title, book.isbn, author_name ");
+    selectBookByTitle = conn.prepareStatement(
+         "SELECT title, book.isbn, unit_price, no_of_copies, author_name FROM book, book_author WHERE title LIKE ? and book.isbn = book_author.isbn ORDER BY title, book.isbn, author_name ");
+    selectBookByAuthor = conn.prepareStatement(
+         "SELECT title, book.isbn, unit_price, no_of_copies, author_name FROM book, book_author WHERE book.isbn IN ( SELECT isbn FROM book_author WHERE author_name LIKE ? ) and book.isbn = book_author.isbn ORDER BY title, book.isbn, author_name ");
 
     /*
      * 5.2.2. Order Creation
@@ -171,20 +179,24 @@ public class Queries {
      * ordered with quantity at least 1.)
      */
 
-    selectCustomerByID = conn.prepareStatement("        SELECT customer_id          FROM customer          WHERE customer_id = ?        ");
+    selectCustomerByID = conn.prepareStatement( "SELECT customer_id FROM customer WHERE customer_id = ? ");
     // just return no_of_copies
-    // checkCopiesAvailable = conn.prepareStatement("    // SELECT no_of_copies    // FROM book    // WHERE isbn = ?    // ");
+    // checkCopiesAvailable = conn.prepareStatement(" // SELECT no_of_copies // FROM
+    // book // WHERE isbn = ? // ");
 
     // return no_of_copies - sum of all ordering's quantity
-    checkCopiesAvailable = conn.prepareStatement("        SELECT no_of_copies - sum(quantity)          FROM book, ordering          WHERE book.isbn = ? and book.isbn = ordering.isbn          group by book.isbn, no_of_copies        ");
+    checkCopiesAvailable = conn.prepareStatement(
+         "SELECT no_of_copies - sum(case when book.isbn = ordering.isbn then quantity else 0 end) FROM book, ordering WHERE book.isbn = ? and book.isbn = ordering.isbn or book.isbn not in (SELECT isbn FROM ordering) GROUP BY book.isbn, no_of_copies");
 
-    getMaxOrderID = conn.prepareStatement("        SELECT MAX(order_id)          FROM orders        ");
+    getMaxOrderID = conn.prepareStatement( "SELECT MAX(order_id) FROM orders ");
 
-    insertOrders = conn.prepareStatement("        INSERT INTO orders (order_id, o_date, shipping_status, customer_id)          VALUES (?, ?, 'N', ?)        ");
+    insertOrders = conn.prepareStatement(
+         "INSERT INTO orders (order_id, o_date, shipping_status, customer_id) VALUES (?, ?, 'N', ?) ");
 
-    insertOrdering = conn.prepareStatement("        INSERT INTO ordering (order_id, isbn, quantity)          VALUES (?, ?, ?)        ");
+    insertOrdering = conn.prepareStatement( "INSERT INTO ordering (order_id, isbn, quantity) VALUES (?, ?, ?) ");
 
-    updateCharge = conn.prepareStatement("        UPDATE orders          SET charge = (              SELECT sum(unit_price * quantity)                FROM book, ordering                where order_id = ? and book.isbn = ordering.isbn                group by order_id) + 10          WHERE order_id = ?        ");
+    updateCharge = conn.prepareStatement(
+         "UPDATE orders SET charge = (SELECT SUM(unit_price * quantity + (CASE WHEN quantity > 0 THEN 10 ELSE 0 END)) + (CASE WHEN SUM(unit_price * quantity + (CASE WHEN quantity > 0 THEN 10 ELSE 0 END)) > 0 THEN 10 ELSE 0 END) FROM book, ordering WHERE order_id = ? AND book.isbn = ordering.isbn GROUP BY order_id) WHERE order_id = ?");
 
     /*
      * 5.2.3. Order Altering
@@ -232,10 +244,11 @@ public class Queries {
      * project, we assume the user will not add or delete any book in the order.)
      */
 
-    selectOrders = conn.prepareStatement("        SELECT shipping_status, charge, customer_id          FROM orders          WHERE order_id = ?        ");
-    selectOrdering = conn.prepareStatement("        SELECT isbn, quantity          FROM ordering          WHERE order_id = ?        ");
-    updateOrders = conn.prepareStatement("        UPDATE orders          SET o_date = ?          WHERE order_id = ?        ");
-    updateOrdering = conn.prepareStatement("        UPDATE ordering          SET quantity = ?          WHERE order_id = ? and isbn = ?        ");
+    selectOrders = conn
+        .prepareStatement( "SELECT shipping_status, charge, customer_id FROM orders WHERE order_id = ? ");
+    selectOrdering = conn.prepareStatement( "SELECT isbn, quantity FROM ordering WHERE order_id = ? ");
+    updateOrders = conn.prepareStatement( "UPDATE orders SET o_date = ? WHERE order_id = ? ");
+    updateOrdering = conn.prepareStatement( "UPDATE ordering SET quantity = ? WHERE order_id = ? and isbn = ? ");
 
     /*
      * 5.2.4. Order Query
@@ -250,21 +263,27 @@ public class Queries {
      */
 
     // Note: EXTRACT()!? first time hear...
-    selectOrdersByCustomerID = conn.prepareStatement("        SELECT order_id, o_date, charge, shipping_status          FROM orders          WHERE customer_id = ? and EXTRACT(YEAR FROM o_date) = ?          ORDER BY order_id        ");
+    selectOrdersByCustomerID = conn.prepareStatement(
+         "SELECT order_id, o_date, charge, shipping_status FROM orders WHERE customer_id = ? and EXTRACT(YEAR FROM o_date) = ? ORDER BY order_id ");
 
     // 5.3.1. Order Update
-    selectOrderShippingStausQuan = conn.prepareStatement("        SELECT shipping_status, sum(quantity)        FROM orders, ordering        WHERE orders.order_id = ? and orders.order_id = ordering.order_id        GROUP BY orders.order_id, shipping_status        ");
+    selectOrderShippingStausQuan = conn.prepareStatement(
+         "SELECT shipping_status, sum(quantity) FROM orders, ordering WHERE orders.order_id = ? and orders.order_id = ordering.order_id GROUP BY orders.order_id, shipping_status ");
 
-    updateOrderShippingStatus = conn.prepareStatement("        UPDATE orders        SET shipping_status = 'Y'        WHERE order_id = ?        ");
+    updateOrderShippingStatus = conn.prepareStatement( "UPDATE orders SET shipping_status = 'Y' WHERE order_id = ? ");
 
     // 5.3.2. Order Query
-    selectOrdersByMonth = conn.prepareStatement("        SELECT order_id, customer_id, o_date, charge        FROM orders        WHERE EXTRACT(YEAR FROM o_date) = ? and EXTRACT(MONTH FROM o_date) = ?        ORDER BY order_id        ");
+    selectOrdersByMonth = conn.prepareStatement(
+         "SELECT order_id, customer_id, o_date, charge FROM orders WHERE EXTRACT(YEAR FROM o_date) = ? and EXTRACT(MONTH FROM o_date) = ? ORDER BY order_id ");
 
     // 5.3.3 N Most Popular Book Query
-    selectNoOfBooks = conn.prepareStatement("      SELECT COUNT(*)      FROM (      SELECT O.ISBN, B.TITLE, SUM(O.QUANTITY) AS NO_OF_COPIES      FROM ORDERING O      JOIN BOOK B ON O.ISBN = B.ISBN      GROUP BY O.ISBN, B.TITLE      ORDER BY ISBN DESC      )        ");
+    selectNoOfBooks = conn.prepareStatement(
+         "SELECT COUNT(*) FROM ( SELECT O.ISBN, B.TITLE, SUM(O.QUANTITY) AS NO_OF_COPIES FROM ORDERING O JOIN BOOK B ON O.ISBN = B.ISBN GROUP BY O.ISBN, B.TITLE ORDER BY ISBN DESC ) ");
 
-    selectAllBook = conn.prepareStatement("      SELECT ISBN, TITLE, NO_OF_COPIES      FROM (        SELECT O.ISBN, B.TITLE, SUM(O.QUANTITY) AS NO_OF_COPIES        FROM ORDERING O        JOIN BOOK B ON O.ISBN = B.ISBN        GROUP BY O.ISBN, B.TITLE        ORDER BY ISBN DESC      )      ORDER BY NO_OF_COPIES DESC        ");
+    selectAllBook = conn.prepareStatement(
+         "SELECT ISBN, TITLE, NO_OF_COPIES FROM ( SELECT O.ISBN, B.TITLE, SUM(O.QUANTITY) AS NO_OF_COPIES FROM ORDERING O JOIN BOOK B ON O.ISBN = B.ISBN GROUP BY O.ISBN, B.TITLE ORDER BY ISBN DESC ) ORDER BY NO_OF_COPIES DESC ");
 
-    selectNMostPopularBook = conn.prepareStatement("      SELECT B2.ISBN, B2.TITLE, B2.NO_OF_COPIES      FROM (      SELECT A.*, ROW_NUMBER() OVER (ORDER BY A.NO_OF_COPIES DESC) AS ROW_NUM          FROM (            SELECT O.ISBN, B.TITLE, SUM(O.QUANTITY) AS NO_OF_COPIES            FROM ORDERING O            JOIN BOOK B ON O.ISBN = B.ISBN            GROUP BY O.ISBN, B.TITLE            ORDER BY ISBN DESC          ) A      )B2, (      SELECT N.NO_OF_COPIES      FROM (          SELECT A.*, ROW_NUMBER() OVER (ORDER BY A.NO_OF_COPIES DESC) AS ROW_NUM          FROM (            SELECT O.ISBN, B.TITLE, SUM(O.QUANTITY) AS NO_OF_COPIES            FROM ORDERING O            JOIN BOOK B ON O.ISBN = B.ISBN            GROUP BY O.ISBN, B.TITLE            ORDER BY ISBN DESC          ) A      ) N      WHERE N.ROW_NUM = ?      ) N2      WHERE B2.NO_OF_COPIES >= N2.NO_OF_COPIES      ORDER BY B2.NO_OF_COPIES DESC        ");
+    selectNMostPopularBook = conn.prepareStatement(
+         "SELECT B2.ISBN, B2.TITLE, B2.NO_OF_COPIES FROM ( SELECT A.*, ROW_NUMBER() OVER (ORDER BY A.NO_OF_COPIES DESC) AS ROW_NUM FROM ( SELECT O.ISBN, B.TITLE, SUM(O.QUANTITY) AS NO_OF_COPIES FROM ORDERING O JOIN BOOK B ON O.ISBN = B.ISBN GROUP BY O.ISBN, B.TITLE ORDER BY ISBN DESC ) A )B2, ( SELECT N.NO_OF_COPIES FROM ( SELECT A.*, ROW_NUMBER() OVER (ORDER BY A.NO_OF_COPIES DESC) AS ROW_NUM FROM ( SELECT O.ISBN, B.TITLE, SUM(O.QUANTITY) AS NO_OF_COPIES FROM ORDERING O JOIN BOOK B ON O.ISBN = B.ISBN GROUP BY O.ISBN, B.TITLE ORDER BY ISBN DESC ) A ) N WHERE N.ROW_NUM = ? ) N2 WHERE B2.NO_OF_COPIES >= N2.NO_OF_COPIES ORDER BY B2.NO_OF_COPIES DESC ");
   }
 }
