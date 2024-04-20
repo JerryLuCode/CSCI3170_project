@@ -21,7 +21,6 @@ public class Project {
   private static Statement statement = null;
   private static ResultSet resultSet = null;
 
-  private static LocalDate date = LocalDate.of(0, 1, 1);
   private static String YYYY = "2000";
   private static String MM = "01";
   private static String DD = "01";
@@ -781,18 +780,19 @@ public class Project {
       updateOrdering.setString(2, orderID);
       updateOrdering.setString(3, books.get(bookNo).a);
       updateOrdering.executeUpdate();
+      System.out.println("Update is ok!");
 
-      updateOrders.setDate(1, Date.valueOf(date));
+      updateOrders.setDate(1, Date.valueOf(YYYY + "-" + MM + "-" + DD));
       updateOrders.setString(2, orderID);
       updateOrders.executeUpdate();
+      System.out.println("update done!!");
 
       updateCharge.setString(1, orderID);
       updateCharge.setString(2, orderID);
       updateCharge.executeUpdate();
 
       connection.commit();
-
-      System.out.println("Update is ok!\nupdate done!!\nupdated charge");
+      System.out.println("updated charge");
 
       // Select and display order & ordering info at last
       var rs = selectOrders.executeQuery();
