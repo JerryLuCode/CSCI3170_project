@@ -5,6 +5,7 @@ import static csci3170project.Utils.*;
 
 import java.util.ArrayList;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.sql.*;
 import java.time.LocalDate;
@@ -24,7 +25,6 @@ public class Project {
   private static String YYYY = "2000";
   private static String MM = "01";
   private static String DD = "01";
-  private static boolean dateSet = false;
   private static Scanner sc = new Scanner(System.in);
 
   public static void main(String[] args) {
@@ -40,6 +40,20 @@ public class Project {
       statement = connection.createStatement();
 
       initQueries(connection);
+
+      // Get the latest date in orders
+      try {
+        var rs = selectMaxODate.executeQuery();
+        if (rs.next()) {
+          var latestDate = rs.getString(1);
+          YYYY = latestDate.substring(0, 4);
+          MM = latestDate.substring(5, 7);
+          DD = latestDate.substring(8, 10);
+        }
+      } catch (SQLException e) {
+        System.out.println("Failed to get the latest date in orders.");
+      }
+
       displayMainMenu();
     } catch (ClassNotFoundException e) {
       System.err.println("Failed to load Oracle JDBC driver.");
@@ -76,19 +90,6 @@ public class Project {
 
   // Main Menu
   private static void displayMainMenu() {
-    try {
-      var rs = selectMaxODate.executeQuery();
-
-      if (rs.next() && dateSet == false) {
-        var latestDate = rs.getString(1);
-        YYYY = latestDate.substring(0, 4);
-        MM = latestDate.substring(5, 7);
-        DD = latestDate.substring(8, 10);
-      }
-    } catch (SQLException e) {
-      System.out.println("Failed to get the latest date in orders.");
-      // e.printStackTrace();
-    }
     System.out.println("The system time is now: " + YYYY + "-" + MM + "-" + DD);
     System.out.println("<This is the Book Ordering System.>");
     System.out.println("-----------------------------------");
@@ -286,7 +287,8 @@ public class Project {
         }
       } catch (SQLException sql) {
         System.out.println("Failed to insert book data: {" + line + "}");
-        throw new SQLException("Failed to insert book_author data: {" + line + "}");
+      } catch (FileNotFoundException e) {
+        System.out.println("Failed to find the file book.txt.");
       }
 
       try (var br = new BufferedReader(new FileReader(path + "/customer.txt"))) {
@@ -300,7 +302,8 @@ public class Project {
         }
       } catch (SQLException sql) {
         System.out.println("Failed to insert customer data: {" + line + "}");
-        throw new SQLException("Failed to insert book_author data: {" + line + "}");
+      } catch (FileNotFoundException e) {
+        System.out.println("Failed to find the file customer.txt.");
       }
 
       try (var br = new BufferedReader(new FileReader(path + "/orders.txt"))) {
@@ -315,7 +318,8 @@ public class Project {
         }
       } catch (SQLException sql) {
         System.out.println("Failed to insert orders data: {" + line + "}");
-        throw new SQLException("Failed to insert book_author data: {" + line + "}");
+      } catch (FileNotFoundException e) {
+        System.out.println("Failed to find the file orders.txt.");
       }
 
       try (var br = new BufferedReader(new FileReader(path + "/ordering.txt"))) {
@@ -328,7 +332,8 @@ public class Project {
         }
       } catch (SQLException sql) {
         System.out.println("Failed to insert ordering data: {" + line + "}");
-        throw new SQLException("Failed to insert book_author data: {" + line + "}");
+      } catch (FileNotFoundException e) {
+        System.out.println("Failed to find the file ordering.txt.");
       }
 
       try (var br = new BufferedReader(new FileReader(path + "/book_author.txt"))) {
@@ -340,7 +345,8 @@ public class Project {
         }
       } catch (SQLException sql) {
         System.out.println("Failed to insert book_author data: {" + line + "}");
-        throw new SQLException("Failed to insert book_author data: {" + line + "}");
+      } catch (FileNotFoundException e) {
+        System.out.println("Failed to find the file book_author.txt.");
       }
 
       connection.commit();
@@ -369,27 +375,32 @@ public class Project {
 
   // https://www.javatpoint.com/java-string-to-date
   private static void setSystemDate() {
-    System.out.print("Please input the date (YYYYMMDD): ");
-    var date = sc.nextLine();
-    while (date.length() != 8 || !date.matches("\\d+") || !isLaterDate(date, YYYY, MM, DD)) {
-      System.out.println("Invalid input. Please enter a date later than " + YYYY + "-" + MM + "-" + DD + ".");
-      System.out.print("Please input the date (YYYYMMDD): ");
-      date = sc.nextLine();
-    }
-    YYYY = date.substring(0, 4);
-    MM = date.substring(4, 6);
-    DD = date.substring(6, 8);
-    dateSet = true;
-
     try {
       var rs = selectMaxODate.executeQuery();
+      String latestDate = null;
+      if (rs.next()){
+        latestDate = rs.getString(1).substring(0, 4) + rs.getString(1).substring(5, 7) + rs.getString(1).substring(8, 10);
+        latestDate = isLaterDate(latestDate, YYYY, MM, DD) ? latestDate : YYYY + MM + DD;
+      } else
+        latestDate = YYYY + MM + DD;
 
-      if (rs.next()) {
-        var latestDate = rs.getString(1);
-        System.out.println("Latest date in orders: " + latestDate.substring(0, 10));
-        System.out.println("Today is " + YYYY + "-" + MM + "-" + DD);
-        displaySystemInterface();
+      String Y = latestDate.substring(0, 4), M = latestDate.substring(4, 6), D = latestDate.substring(6, 8);
+
+      System.out.print("Please input the date (YYYYMMDD): ");
+      var date = sc.nextLine();
+      while (date.length() != 8 || !date.matches("\\d+") || !isLaterDate(date, Y, M, D)) {
+        System.out.println("Invalid input. Please enter a date later than " + YYYY + "-" + MM + "-" + DD + ".");
+        System.out.print("Please input the date (YYYYMMDD): ");
+        date = sc.nextLine();
       }
+
+      YYYY = date.substring(0, 4);
+      MM = date.substring(4, 6);
+      DD = date.substring(6, 8);
+
+      System.out.println("Latest date in orders: " + Y + "-" + M + "-" + D);
+      System.out.println("Today is " + YYYY + "-" + MM + "-" + DD);
+      displaySystemInterface();
     } catch (SQLException e) {
       System.out.println("Failed to get the latest date in orders.");
       // e.printStackTrace();
