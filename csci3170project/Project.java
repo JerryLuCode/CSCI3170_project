@@ -231,7 +231,7 @@ public class Project {
         }
       } catch (SQLException sql) {
         System.out.println("Failed to insert book data: {" + line + "}");
-        //throw new SQLException("Failed to insert book_author data: {" + line + "}");
+        throw new SQLException("Failed to insert book_author data: {" + line + "}");
       }
 
       try (var br = new BufferedReader(new FileReader(path + "/customer.txt"))) {
@@ -245,7 +245,7 @@ public class Project {
         }
       } catch (SQLException sql) {
         System.out.println("Failed to insert customer data: {" + line + "}");
-        //throw new SQLException("Failed to insert book_author data: {" + line + "}");
+        throw new SQLException("Failed to insert book_author data: {" + line + "}");
       }
 
       try (var br = new BufferedReader(new FileReader(path + "/orders.txt"))) {
@@ -260,7 +260,7 @@ public class Project {
         }
       } catch (SQLException sql) {
         System.out.println("Failed to insert orders data: {" + line + "}");
-        //throw new SQLException("Failed to insert book_author data: {" + line + "}");
+        throw new SQLException("Failed to insert book_author data: {" + line + "}");
       }
 
       try (var br = new BufferedReader(new FileReader(path + "/ordering.txt"))) {
@@ -273,7 +273,7 @@ public class Project {
         }
       } catch (SQLException sql) {
         System.out.println("Failed to insert ordering data: {" + line + "}");
-        //throw new SQLException("Failed to insert book_author data: {" + line + "}");
+        throw new SQLException("Failed to insert book_author data: {" + line + "}");
       }
 
       try (var br = new BufferedReader(new FileReader(path + "/book_author.txt"))) {
@@ -285,7 +285,7 @@ public class Project {
         }
       } catch (SQLException sql) {
         System.out.println("Failed to insert book_author data: {" + line + "}");
-        //throw new SQLException("Failed to insert book_author data: {" + line + "}");
+        throw new SQLException("Failed to insert book_author data: {" + line + "}");
       }
 
       connection.commit();
