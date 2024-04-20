@@ -138,7 +138,7 @@ public class Utils {
   }
 
   public static String readAuthor(String str) throws IllegalArgumentException {
-    if (Pattern.matches("^[\\w ]{1,50}$", str))
+    if (Pattern.matches("^[\\w%_ ]{1,50}$", str))
       return str;
     else
       throw new IllegalArgumentException("Invalid Author Format: " + str);
